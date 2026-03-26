@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "mssql": {
+      "command": "./mcp-mssql.exe"
+    }
+  }
+}

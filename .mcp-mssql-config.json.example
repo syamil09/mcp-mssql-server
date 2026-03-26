@@ -1,0 +1,28 @@
+{
+  "server": "YOUR_SERVER_IP",
+  "port": 1433,
+  "database": "YOUR_DATABASE",
+  "user": "YOUR_USERNAME",
+  "password": "YOUR_PASSWORD",
+  "encrypt": false,
+  "connection_timeout": 240,
+  "blocked_tables": [
+    "users",
+    "user_sessions",
+    "audit_log",
+    "api_keys",
+    "password_resets",
+    "system_config"
+  ],
+  "sensitive_columns": [
+    "password",
+    "password_hash",
+    "salary",
+    "token",
+    "secret",
+    "credit_card",
+    "pin",
+    "api_key"
+  ],
+  "max_rows": 200
+}

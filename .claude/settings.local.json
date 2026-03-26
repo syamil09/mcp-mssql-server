@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(go mod:*)",
+      "mcp__mssql__query_database",
+      "mcp__mssql__describe_table",
+      "mcp__mssql__list_tables",
+      "Bash(MSSQL_CONNECTION_STRING=\"sqlserver://admin.sam:SAM2021@16.0.0.5:1433?database=SAM PROD&connection+timeout=240&encrypt=disable\" timeout 15 ./mcp-mssql.exe 2)",
+      "Bash(1:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "mssql"
+  ]
+}

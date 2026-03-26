@@ -1,0 +1,7 @@
+# Real config with credentials — NEVER commit
+.mcp-mssql-config.json
+
+# Keep these in Git (committed):
+# .mcp.json              — uses relative ./mcp-mssql.exe, no credentials
+# .mcp-mssql-config.json.example — template for team
+# mcp-mssql.exe          — pre-built binary, ready to use
