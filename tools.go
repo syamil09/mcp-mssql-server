@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -30,11 +31,22 @@ func registerTools(s *server.MCPServer, db *Database) {
 
 	s.AddTool(
 		mcp.NewTool("query_database",
-			mcp.WithDescription("Execute a SELECT query against the SQL Server database. Only SELECT and WITH (CTE) queries are allowed. Dangerous keywords are blocked. Results are automatically limited and sensitive columns are masked."),
+			mcp.WithDescription("Execute a read-only SQL query against the SQL Server database. Supports SELECT, WITH (CTE), and DECLARE/SET variable blocks ending in SELECT. Semicolons are allowed for ;WITH CTE and multi-statement blocks. Data-modifying keywords (INSERT, UPDATE, DELETE, DROP, etc.) are blocked. Results are automatically limited and sensitive columns are masked. For stored procedures, use exec_sp instead."),
 			mcp.WithString("sql", mcp.Required(),
-				mcp.Description("The SQL SELECT query to execute. Must start with SELECT or WITH.")),
+				mcp.Description("The SQL query to execute. Must start with SELECT, WITH, or DECLARE.")),
 		),
 		handleQuery(db),
+	)
+
+	s.AddTool(
+		mcp.NewTool("exec_sp",
+			mcp.WithDescription("Execute a stored procedure after verifying it is read-only (contains no INSERT, UPDATE, DELETE, DROP, ALTER, TRUNCATE, etc.). The SP definition is inspected from sys.sql_modules before execution. Use this when you need to call a stored procedure safely."),
+			mcp.WithString("procedure", mcp.Required(),
+				mcp.Description("The stored procedure name, e.g. 'dbo.SAM_API_GetDataProductBySalesman' or 'SAM_API_GetDataProductBySalesman'.")),
+			mcp.WithString("params",
+				mcp.Description("Parameters as SQL fragment, e.g. \"@szEmployeeId = '10002088', @dtDate = '2024-01-01'\". Leave empty if the SP takes no parameters.")),
+		),
+		handleExecSP(db),
 	)
 
 	s.AddTool(
@@ -146,6 +158,82 @@ func handleDescribeTable(db *Database) server.ToolHandlerFunc {
 	}
 }
 
+func handleExecSP(db *Database) server.ToolHandlerFunc {
+	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		args := req.GetArguments()
+
+		procedure, _ := args["procedure"].(string)
+		procedure = strings.TrimSpace(procedure)
+		if procedure == "" {
+			return mcp.NewToolResultError("procedure parameter is required"), nil
+		}
+
+		// Sanitize: only allow alphanumeric, dot, underscore, brackets
+		validSP := regexp.MustCompile(`^[\w.\[\]]+$`)
+		if !validSP.MatchString(procedure) {
+			return mcp.NewToolResultError("invalid procedure name"), nil
+		}
+
+		// Step 1: Read SP definition from sys.sql_modules
+		inspectQuery := `
+			SELECT m.definition
+			FROM sys.sql_modules m
+			JOIN sys.objects o ON m.object_id = o.object_id
+			WHERE o.type = 'P'
+			  AND (o.name = @p1 OR SCHEMA_NAME(o.schema_id) + '.' + o.name = @p1)
+		`
+		// Extract just the object name (without schema) for the name-only match
+		spName := procedure
+		if parts := strings.Split(procedure, "."); len(parts) > 1 {
+			spName = strings.Trim(parts[len(parts)-1], "[]")
+		}
+
+		defResult, err := db.ExecuteQueryParam(ctx, inspectQuery, spName)
+		if err != nil {
+			return mcp.NewToolResultError(fmt.Sprintf("failed to inspect SP: %s", err.Error())), nil
+		}
+
+		if defResult.Count == 0 {
+			return mcp.NewToolResultError(fmt.Sprintf("stored procedure '%s' not found or not accessible", procedure)), nil
+		}
+
+		definition, _ := defResult.Rows[0]["definition"].(string)
+		if definition == "" {
+			return mcp.NewToolResultError("cannot read SP definition (may be encrypted)"), nil
+		}
+
+		// Step 2: Validate the SP body is read-only
+		if err := ValidateSPDefinition(definition); err != nil {
+			AuditLog("EXEC "+procedure, false, 0, err)
+			return mcp.NewToolResultError(fmt.Sprintf("SP blocked: %s", err.Error())), nil
+		}
+
+		// Step 3: Build and execute
+		execSQL := "EXEC " + procedure
+		params, _ := args["params"].(string)
+		if strings.TrimSpace(params) != "" {
+			execSQL += " " + params
+		}
+
+		log.Printf("[AUDIT] SP validated as read-only, executing: %s", execSQL)
+
+		result, err := db.ExecuteQuery(ctx, execSQL)
+		if err != nil {
+			AuditLog(execSQL, false, 0, err)
+			return mcp.NewToolResultError(fmt.Sprintf("SP execution failed: %s", err.Error())), nil
+		}
+
+		safeResult := MaskSensitiveColumns(result)
+		AuditLog(execSQL, true, safeResult.Count, nil)
+
+		output, err := serializeResult(safeResult)
+		if err != nil {
+			return mcp.NewToolResultError("failed to serialize results"), nil
+		}
+		return mcp.NewToolResultText(output), nil
+	}
+}
+
 func handleBenchmark(db *Database) server.ToolHandlerFunc {
 	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		args := req.GetArguments()
@@ -221,7 +309,8 @@ func handleBenchmark(db *Database) server.ToolHandlerFunc {
 }
 
 func runBenchmark(ctx context.Context, db *Database, query string) (map[string]interface{}, error) {
-	finalQuery := addRowLimitIfMissing(query, MaxRows)
+	// No row limit for benchmarking — run the query as-is for accurate timing
+	finalQuery := query
 
 	start := time.Now()
 	result, err := db.ExecuteQuery(ctx, finalQuery)

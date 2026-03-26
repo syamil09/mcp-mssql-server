@@ -32,7 +32,7 @@ func main() {
 	}
 	log.Println("Connected to SQL Server successfully")
 
-	s := server.NewMCPServer("mcp-mssql", "2.1.0",
+	s := server.NewMCPServer("mcp-mssql", "3.0.0",
 		server.WithInstructions(`You are connected to a SQL Server database via mcp-mssql.
 You can only READ data — no writes, updates, or deletions are possible.
 Always be conservative with row counts. Start with small limits before
@@ -42,12 +42,25 @@ for security reasons — respect those boundaries.
 Available tools:
 - list_tables: See all queryable tables
 - describe_table: Get column names and types for a table
-- query_database: Execute SELECT queries`),
+- query_database: Execute SELECT queries (supports SELECT, WITH, and DECLARE)
+- exec_sp: Execute a stored procedure safely. The SP definition is inspected
+  first — only read-only SPs (no INSERT/UPDATE/DELETE/DROP/ALTER) are allowed.
+  Use this instead of OPENROWSET or trying to embed EXEC inside a SELECT.
+  Example: exec_sp(procedure: "SAM_API_GetDataProductBySalesman", params: "@szEmployeeId = '10002088'")
+- benchmark_query: Compare query performance. Pass one or two queries and get
+  execution time + row count without returning the actual data. Useful for
+  comparing old vs new versions of a query or SP refactoring.
+
+Guidelines:
+- For simple data retrieval, prefer query_database with SELECT
+- For calling stored procedures, use exec_sp — do NOT use OPENROWSET
+- For performance comparison, use benchmark_query
+- You can use DECLARE with query_database for variable-based SELECT queries`),
 	)
 
 	registerTools(s, db)
 
-	log.Println("mcp-mssql v2.1.0 starting (stdio transport)...")
+	log.Println("mcp-mssql v3.0.0 starting (stdio transport)...")
 	if err := server.ServeStdio(s); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}
