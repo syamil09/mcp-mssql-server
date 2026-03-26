@@ -24,11 +24,15 @@ type Config struct {
 	BlockedTables    []string `json:"blocked_tables"`
 	SensitiveColumns []string `json:"sensitive_columns"`
 	MaxRows          int      `json:"max_rows"`
+
+	// Output format: "json" (default) or "toon" (token-optimized for LLMs)
+	OutputFormat string `json:"output_format"`
 }
 
 var BlockedTables map[string]bool
 var SensitiveColumns map[string]bool
 var MaxRows int
+var OutputFormat string
 var LoadedConfig Config
 
 func LoadConfig() {
@@ -40,6 +44,11 @@ func LoadConfig() {
 	MaxRows = cfg.MaxRows
 	if MaxRows == 0 {
 		MaxRows = 100
+	}
+
+	OutputFormat = strings.ToLower(cfg.OutputFormat)
+	if OutputFormat != "toon" {
+		OutputFormat = "json"
 	}
 
 	// Built-in sensitive column defaults if nothing configured

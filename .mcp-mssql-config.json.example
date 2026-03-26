@@ -24,5 +24,6 @@
     "pin",
     "api_key"
   ],
-  "max_rows": 200
+  "max_rows": 200,
+  "output_format": "toon"
 }
