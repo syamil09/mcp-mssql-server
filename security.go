@@ -102,15 +102,54 @@ func MaskSensitiveColumns(result *QueryResult) *QueryResult {
 	return &QueryResult{Columns: safeColumns, Rows: safeRows, Count: result.Count}
 }
 
-// spDangerousPattern matches keywords that modify data or structure inside SP definitions.
+// spDangerousPattern matches keywords that modify data/structure or enable dynamic SQL in SP definitions.
+// EXEC/EXECUTE/SP_EXECUTESQL are blocked because dynamic SQL can bypass all static checks.
 var spDangerousPattern = regexp.MustCompile(
-	`(?i)\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|MERGE|BULK\s+INSERT|XP_CMDSHELL|OPENROWSET|INTO)\b`,
+	`(?i)\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|MERGE|BULK\s+INSERT|XP_CMDSHELL|OPENROWSET|EXEC|EXECUTE|SP_EXECUTESQL|INTO)\b`,
 )
 
+// spHeaderPattern strips CREATE/ALTER PROCEDURE/FUNCTION from the SP definition.
+// Uses (?s) so it works across newlines (comments before CREATE are common).
+var spHeaderPattern = regexp.MustCompile(`(?is)\b(CREATE|ALTER)\s+(PROCEDURE|PROC|FUNCTION)\b`)
+
+// tempTablePatterns matches operations on temp tables (#table) which are safe
+// because they are session-scoped and automatically cleaned up.
+// Uses (?s) so \s+ can match across newlines in multi-line SP definitions.
+var tempTablePatterns = []*regexp.Regexp{
+	regexp.MustCompile(`(?is)\bINSERT\s+INTO\s+#\w+`),              // INSERT INTO #temp
+	regexp.MustCompile(`(?is)\bSELECT\b[^;]*?\bINTO\s+#\w+`),      // SELECT ... INTO #temp
+	regexp.MustCompile(`(?is)\bCREATE\s+TABLE\s+#\w+`),             // CREATE TABLE #temp
+	regexp.MustCompile(`(?is)\bCREATE\s+INDEX\s+\w+\s+ON\s+#\w+`), // CREATE INDEX IX_x ON #temp
+	regexp.MustCompile(`(?is)\bDROP\s+TABLE\s+(IF\s+EXISTS\s+)?#\w+`),           // DROP TABLE [IF EXISTS] #temp
+	regexp.MustCompile(`(?is)\bIF\s+OBJECT_ID\s*\(\s*'tempdb\.\.#\w+'\s*\)\s*IS\s+NOT\s+NULL\s+DROP\s+TABLE\s+#\w+`), // IF OBJECT_ID('tempdb..#temp') IS NOT NULL DROP TABLE #temp
+	regexp.MustCompile(`(?is)\bDELETE\s+FROM\s+#\w+`),              // DELETE FROM #temp
+	regexp.MustCompile(`(?is)\bTRUNCATE\s+TABLE\s+#\w+`),           // TRUNCATE TABLE #temp
+	regexp.MustCompile(`(?is)\bUPDATE\s+#\w+`),                     // UPDATE #temp
+	regexp.MustCompile(`(?is)\bALTER\s+TABLE\s+#\w+`),              // ALTER TABLE #temp
+}
+
+// stripSafeSPPatterns removes the SP header and all temp table operations
+// from the SP definition so they don't trigger false positives.
+func stripSafeSPPatterns(definition string) string {
+	// Step 1: Strip the SP header (CREATE PROCEDURE / ALTER PROCEDURE)
+	result := spHeaderPattern.ReplaceAllString(definition, "")
+	// Step 2: Strip temp table operations
+	for _, pat := range tempTablePatterns {
+		result = pat.ReplaceAllString(result, "")
+	}
+	return result
+}
+
 // ValidateSPDefinition checks if a stored procedure body contains data-modifying keywords.
-// Returns nil if the SP is read-only (safe), or an error describing what was found.
+// The SP header (CREATE PROCEDURE) and temp table operations (#table) are stripped first
+// since they are safe. Any remaining INSERT/UPDATE/DELETE/DROP/ALTER/CREATE targeting
+// real tables will be blocked.
+// Returns nil if the SP is safe, or an error describing what was found.
 func ValidateSPDefinition(definition string) error {
-	matches := spDangerousPattern.FindAllString(definition, -1)
+	// Strip safe patterns: SP header + temp table ops
+	cleaned := stripSafeSPPatterns(definition)
+
+	matches := spDangerousPattern.FindAllString(cleaned, -1)
 	if len(matches) == 0 {
 		return nil
 	}
