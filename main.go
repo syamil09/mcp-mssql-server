@@ -61,10 +61,20 @@ SSIS ETL tools (no DB connection needed — parses .dtsx files from configured p
 - ssis_list_deployed: List packages deployed to SSISDB catalog on the server
 - ssis_execution_history: Get execution history from SSISDB — status, duration, filter by package/status
 
+Export tools:
+- export_sql_to_json: Export query or SP results to a JSON file. Supports nested
+  JSON column parsing (auto-detect or specify with json_columns param). Use
+  source_column to extract JSON from a specific column as the output list.
+  Files are saved to exportDatabaseSql/ folder.
+  Example: export_sql_to_json(procedure: "dbo.GetProducts", params: "@categoryId = 1")
+  Example: export_sql_to_json(sql: "SELECT * FROM Products", json_columns: "metadata,config")
+  Example: export_sql_to_json(procedure: "dbo.GetRawData", source_column: "rawdata")
+
 Guidelines:
 - For simple data retrieval, prefer query_database with SELECT
 - For calling stored procedures, use exec_sp — do NOT use OPENROWSET
 - For performance comparison, use benchmark_query
+- For exporting data to JSON files, use export_sql_to_json
 - You can use DECLARE with query_database for variable-based SELECT queries`),
 	)
 

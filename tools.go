@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -63,6 +62,25 @@ func registerTools(s *server.MCPServer, db *Database) {
 				mcp.Description("Name of the table to describe.")),
 		),
 		handleDescribeTable(db),
+	)
+
+	s.AddTool(
+		mcp.NewTool("export_sql_to_json",
+			mcp.WithDescription("Export SQL query or stored procedure results to a JSON file. Supports nested JSON column parsing (auto-detect or explicit) and single-column extraction mode. Files are saved to the exportDatabaseSql/ folder."),
+			mcp.WithString("sql",
+				mcp.Description("SQL SELECT query to execute and export. Mutually exclusive with 'procedure'.")),
+			mcp.WithString("procedure",
+				mcp.Description("Stored procedure name to execute and export. Mutually exclusive with 'sql'.")),
+			mcp.WithString("params",
+				mcp.Description("Parameters for the stored procedure, e.g. \"@szEmployeeId = '10002088'\".")),
+			mcp.WithString("json_columns",
+				mcp.Description("Comma-separated column names to parse as nested JSON objects. If omitted, auto-detects string values starting with { or [.")),
+			mcp.WithString("source_column",
+				mcp.Description("Extract JSON from this single column as the output list. Each row's value becomes a top-level JSON object (or array elements are flattened) in the output file.")),
+			mcp.WithString("filename",
+				mcp.Description("Custom output filename (without extension). Default: <source_name>_<timestamp>.json")),
+		),
+		handleExportJSON(db),
 	)
 
 	registerSSISTools(s, db)
@@ -170,59 +188,12 @@ func handleExecSP(db *Database) server.ToolHandlerFunc {
 			return mcp.NewToolResultError("procedure parameter is required"), nil
 		}
 
-		// Sanitize: only allow alphanumeric, dot, underscore, brackets
-		validSP := regexp.MustCompile(`^[\w.\[\]]+$`)
-		if !validSP.MatchString(procedure) {
-			return mcp.NewToolResultError("invalid procedure name"), nil
-		}
-
-		// Step 1: Read SP definition from sys.sql_modules
-		inspectQuery := `
-			SELECT m.definition
-			FROM sys.sql_modules m
-			JOIN sys.objects o ON m.object_id = o.object_id
-			WHERE o.type = 'P'
-			  AND (o.name = @p1 OR SCHEMA_NAME(o.schema_id) + '.' + o.name = @p1)
-		`
-		// Extract just the object name (without schema) for the name-only match
-		spName := procedure
-		if parts := strings.Split(procedure, "."); len(parts) > 1 {
-			spName = strings.Trim(parts[len(parts)-1], "[]")
-		}
-
-		defResult, err := db.ExecuteQueryParam(ctx, inspectQuery, spName)
-		if err != nil {
-			return mcp.NewToolResultError(fmt.Sprintf("failed to inspect SP: %s", err.Error())), nil
-		}
-
-		if defResult.Count == 0 {
-			return mcp.NewToolResultError(fmt.Sprintf("stored procedure '%s' not found or not accessible", procedure)), nil
-		}
-
-		definition, _ := defResult.Rows[0]["definition"].(string)
-		if definition == "" {
-			return mcp.NewToolResultError("cannot read SP definition (may be encrypted)"), nil
-		}
-
-		// Step 2: Validate the SP body is read-only
-		if err := ValidateSPDefinition(definition); err != nil {
-			AuditLog("EXEC "+procedure, false, 0, err)
-			return mcp.NewToolResultError(fmt.Sprintf("SP blocked: %s", err.Error())), nil
-		}
-
-		// Step 3: Build and execute
-		execSQL := "EXEC " + procedure
 		params, _ := args["params"].(string)
-		if strings.TrimSpace(params) != "" {
-			execSQL += " " + params
-		}
 
-		log.Printf("[AUDIT] SP validated as read-only, executing: %s", execSQL)
-
-		result, err := db.ExecuteQuery(ctx, execSQL)
+		result, execSQL, err := validateAndExecSP(ctx, db, procedure, params)
 		if err != nil {
 			AuditLog(execSQL, false, 0, err)
-			return mcp.NewToolResultError(fmt.Sprintf("SP execution failed: %s", err.Error())), nil
+			return mcp.NewToolResultError(err.Error()), nil
 		}
 
 		safeResult := MaskSensitiveColumns(result)

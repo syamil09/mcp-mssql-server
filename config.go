@@ -28,6 +28,10 @@ type Config struct {
 	// Output format: "json" (default) or "toon" (token-optimized for LLMs)
 	OutputFormat string `json:"output_format"`
 
+	// Export settings
+	ExportMaxRows int    `json:"export_max_rows"` // Row limit for export_sql_to_json (0 = unlimited, default: 10000)
+	ExportDir     string `json:"export_dir"`      // Custom output directory for exported JSON files
+
 	// SSIS ETL project path for .dtsx parsing tools
 	ProjectSSISPath string `json:"project_ssis_path"`
 }
@@ -66,8 +70,16 @@ func LoadConfig() {
 	}
 
 	SSISProjectPath = cfg.ProjectSSISPath
-	log.Printf("[CONFIG] blocked_tables=%d sensitive_columns=%d max_rows=%d ssis_project_path=%s",
-		len(BlockedTables), len(SensitiveColumns), MaxRows, SSISProjectPath)
+
+	if cfg.ExportMaxRows > 0 {
+		ExportMaxRows = cfg.ExportMaxRows
+	}
+	if cfg.ExportDir != "" {
+		ExportDirOverride = cfg.ExportDir
+	}
+
+	log.Printf("[CONFIG] blocked_tables=%d sensitive_columns=%d max_rows=%d export_max_rows=%d ssis_project_path=%s",
+		len(BlockedTables), len(SensitiveColumns), MaxRows, ExportMaxRows, SSISProjectPath)
 }
 
 func loadConfigFile() Config {
