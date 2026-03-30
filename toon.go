@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -51,7 +52,15 @@ func toonValue(v interface{}) string {
 			return "true"
 		}
 		return "false"
-	case int, int8, int16, int32, int64:
+	case int:
+		return fmt.Sprintf("%d", val)
+	case int8:
+		return fmt.Sprintf("%d", val)
+	case int16:
+		return fmt.Sprintf("%d", val)
+	case int32:
+		return fmt.Sprintf("%d", val)
+	case int64:
 		return fmt.Sprintf("%d", val)
 	case float32:
 		return formatFloat(float64(val))
@@ -161,3 +170,142 @@ func looksNumeric(s string) bool {
 	}
 	return hasDigit
 }
+
+// serializeAny serializes any value using the configured OutputFormat.
+// For "toon", it converts maps and slices to a compact TOON-like text format.
+// For "json" (default), it uses standard JSON indented output.
+func serializeAny(v interface{}) (string, error) {
+	if OutputFormat == "toon" {
+		// JSON round-trip to normalize Go structs into map[string]interface{} / []interface{}
+		// so the TOON renderer can handle them uniformly.
+		data, err := json.Marshal(v)
+		if err != nil {
+			return "", err
+		}
+		var normalized interface{}
+		if err := json.Unmarshal(data, &normalized); err != nil {
+			return "", err
+		}
+		return toTOONAny(normalized, 0), nil
+	}
+	jsonBytes, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		return "", err
+	}
+	return string(jsonBytes), nil
+}
+
+// toTOONAny recursively converts any value to TOON-like text representation.
+func toTOONAny(v interface{}, indent int) string {
+	if v == nil {
+		return "null"
+	}
+	prefix := strings.Repeat("  ", indent)
+
+	switch val := v.(type) {
+	case map[string]interface{}:
+		if len(val) == 0 {
+			return "{}"
+		}
+		var sb strings.Builder
+		// Sort keys for deterministic output
+		keys := make([]string, 0, len(val))
+		for k := range val {
+			keys = append(keys, k)
+		}
+		sortStrings(keys)
+		for _, k := range keys {
+			child := val[k]
+			// Check if child is a slice of uniform objects → tabular
+			if arr, ok := child.([]interface{}); ok && len(arr) > 0 {
+				if cols := uniformObjectKeys(arr); cols != nil {
+					sb.WriteString(fmt.Sprintf("%s%s[%d]{%s}:\n", prefix, k, len(arr), strings.Join(cols, ",")))
+					for _, item := range arr {
+						row := item.(map[string]interface{})
+						sb.WriteString(prefix + "  ")
+						for ci, c := range cols {
+							if ci > 0 {
+								sb.WriteString(",")
+							}
+							sb.WriteString(toonValue(row[c]))
+						}
+						sb.WriteString("\n")
+					}
+					continue
+				}
+			}
+	sb.WriteString(fmt.Sprintf("%s%s: %s\n", prefix, k, toTOONAny(child, indent+1)))
+		}
+		return sb.String()
+
+	case []interface{}:
+		if len(val) == 0 {
+			return "[]"
+		}
+		// Try tabular
+		if cols := uniformObjectKeys(val); cols != nil {
+			var sb strings.Builder
+			sb.WriteString(fmt.Sprintf("[%d]{%s}:\n", len(val), strings.Join(cols, ",")))
+			for _, item := range val {
+				row := item.(map[string]interface{})
+				sb.WriteString(prefix + "  ")
+				for ci, c := range cols {
+					if ci > 0 {
+						sb.WriteString(",")
+					}
+					sb.WriteString(toonValue(row[c]))
+				}
+				sb.WriteString("\n")
+			}
+			return sb.String()
+		}
+		// Non-uniform: list
+		var sb strings.Builder
+		for _, item := range val {
+			sb.WriteString(fmt.Sprintf("%s- %s\n", prefix, toTOONAny(item, indent+1)))
+		}
+		return sb.String()
+
+	default:
+		return toonValue(v)
+	}
+}
+
+// uniformObjectKeys returns column names if all items in the slice are
+// map[string]interface{} with the same keys; nil otherwise.
+func uniformObjectKeys(arr []interface{}) []string {
+	if len(arr) == 0 {
+		return nil
+	}
+	first, ok := arr[0].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	keys := make([]string, 0, len(first))
+	for k := range first {
+		keys = append(keys, k)
+	}
+	sortStrings(keys)
+	for _, item := range arr[1:] {
+		m, ok := item.(map[string]interface{})
+		if !ok || len(m) != len(keys) {
+			return nil
+		}
+		for _, k := range keys {
+			if _, exists := m[k]; !exists {
+				return nil
+			}
+		}
+	}
+	return keys
+}
+
+// sortStrings sorts a string slice in place (simple insertion sort to avoid import).
+func sortStrings(s []string) {
+	for i := 1; i < len(s); i++ {
+		for j := i; j > 0 && s[j] < s[j-1]; j-- {
+			s[j], s[j-1] = s[j-1], s[j]
+		}
+	}
+}
+

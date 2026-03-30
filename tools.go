@@ -64,6 +64,8 @@ func registerTools(s *server.MCPServer, db *Database) {
 		),
 		handleDescribeTable(db),
 	)
+
+	registerSSISTools(s, db)
 }
 
 func handleQuery(db *Database) server.ToolHandlerFunc {

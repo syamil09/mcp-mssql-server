@@ -51,6 +51,16 @@ Available tools:
   execution time + row count without returning the actual data. Useful for
   comparing old vs new versions of a query or SP refactoring.
 
+SSIS ETL tools (no DB connection needed — parses .dtsx files from configured path):
+- ssis_list_packages: List all .dtsx SSIS packages in the configured path
+- ssis_control_flow: Extract task sequence and SQL from a single package
+- ssis_data_flow: Extract components, table names, SQL queries, column mappings
+- ssis_impact_check: Scan ALL packages for table/column — use before schema changes
+- ssis_table_refs: List all tables a package reads from or writes to
+- ssis_schema_validate: Cross-reference SSIS package vs live DB schema — reports missing tables/columns
+- ssis_list_deployed: List packages deployed to SSISDB catalog on the server
+- ssis_execution_history: Get execution history from SSISDB — status, duration, filter by package/status
+
 Guidelines:
 - For simple data retrieval, prefer query_database with SELECT
 - For calling stored procedures, use exec_sp — do NOT use OPENROWSET

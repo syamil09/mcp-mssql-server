@@ -27,12 +27,16 @@ type Config struct {
 
 	// Output format: "json" (default) or "toon" (token-optimized for LLMs)
 	OutputFormat string `json:"output_format"`
+
+	// SSIS ETL project path for .dtsx parsing tools
+	ProjectSSISPath string `json:"project_ssis_path"`
 }
 
 var BlockedTables map[string]bool
 var SensitiveColumns map[string]bool
 var MaxRows int
 var OutputFormat string
+var SSISProjectPath string
 var LoadedConfig Config
 
 func LoadConfig() {
@@ -61,8 +65,9 @@ func LoadConfig() {
 		}
 	}
 
-	log.Printf("[CONFIG] blocked_tables=%d sensitive_columns=%d max_rows=%d",
-		len(BlockedTables), len(SensitiveColumns), MaxRows)
+	SSISProjectPath = cfg.ProjectSSISPath
+	log.Printf("[CONFIG] blocked_tables=%d sensitive_columns=%d max_rows=%d ssis_project_path=%s",
+		len(BlockedTables), len(SensitiveColumns), MaxRows, SSISProjectPath)
 }
 
 func loadConfigFile() Config {
