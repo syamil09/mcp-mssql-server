@@ -10,63 +10,173 @@ import (
 	"strings"
 )
 
+// ConnectionConfig holds per-connection database credentials and security settings.
+type ConnectionConfig struct {
+	Server            string   `json:"server"`
+	Port              int      `json:"port"`
+	Database          string   `json:"database"`
+	User              string   `json:"user"`
+	Password          string   `json:"password"`
+	Encrypt           bool     `json:"encrypt"`
+	ConnectionTimeout int      `json:"connection_timeout"`
+	BlockedTables     []string `json:"blocked_tables"`
+	SensitiveColumns  []string `json:"sensitive_columns"`
+	MaxRows           int      `json:"max_rows"`
+	IsDefault         bool     `json:"default"`
+
+	// Resolved at load time (not serialized)
+	BlockedTablesMap    map[string]bool `json:"-"`
+	SensitiveColumnsMap map[string]bool `json:"-"`
+	MaxRowsResolved     int             `json:"-"`
+	RawConnString       string          `json:"-"` // pre-built connection string (e.g. from env var)
+}
+
+// BuildConnectionString creates a go-mssqldb URL from connection config fields.
+// Returns empty string if server is not configured.
+func (c *ConnectionConfig) BuildConnectionString() string {
+	if c.RawConnString != "" {
+		return c.RawConnString
+	}
+	if c.Server == "" {
+		return ""
+	}
+
+	port := c.Port
+	if port == 0 {
+		port = 1433
+	}
+
+	timeout := c.ConnectionTimeout
+	if timeout == 0 {
+		timeout = 30
+	}
+
+	encrypt := "disable"
+	if c.Encrypt {
+		encrypt = "true"
+	}
+
+	connURL := fmt.Sprintf("sqlserver://%s:%s@%s:%d?database=%s&encrypt=%s&connection+timeout=%d",
+		url.PathEscape(c.User),
+		url.PathEscape(c.Password),
+		c.Server,
+		port,
+		url.QueryEscape(c.Database),
+		encrypt,
+		timeout,
+	)
+
+	return connURL
+}
+
+// resolveDefaults populates the resolved maps and applies defaults.
+func (c *ConnectionConfig) resolveDefaults() {
+	c.BlockedTablesMap = toMap(c.BlockedTables)
+	c.SensitiveColumnsMap = toMap(c.SensitiveColumns)
+	c.MaxRowsResolved = c.MaxRows
+	if c.MaxRowsResolved == 0 {
+		c.MaxRowsResolved = 100
+	}
+
+	// Built-in sensitive column defaults if nothing configured
+	if len(c.SensitiveColumnsMap) == 0 {
+		c.SensitiveColumnsMap = map[string]bool{
+			"password": true, "password_hash": true,
+			"ssn": true, "credit_card": true,
+			"salary": true, "token": true,
+			"secret": true, "api_key": true,
+		}
+	}
+}
+
 type Config struct {
-	// Database credentials (optional — can use MSSQL_CONNECTION_STRING env var instead)
-	Server            string `json:"server"`
-	Port              int    `json:"port"`
-	Database          string `json:"database"`
-	User              string `json:"user"`
-	Password          string `json:"password"`
-	Encrypt           bool   `json:"encrypt"`
-	ConnectionTimeout int    `json:"connection_timeout"`
+	// Multi-connection support: named connections
+	Connections map[string]*ConnectionConfig `json:"connections"`
 
-	// Security config
-	BlockedTables    []string `json:"blocked_tables"`
-	SensitiveColumns []string `json:"sensitive_columns"`
-	MaxRows          int      `json:"max_rows"`
+	// Legacy flat fields (backward compat — used when "connections" is absent)
+	Server            string   `json:"server"`
+	Port              int      `json:"port"`
+	Database          string   `json:"database"`
+	User              string   `json:"user"`
+	Password          string   `json:"password"`
+	Encrypt           bool     `json:"encrypt"`
+	ConnectionTimeout int      `json:"connection_timeout"`
+	BlockedTables     []string `json:"blocked_tables"`
+	SensitiveColumns  []string `json:"sensitive_columns"`
+	MaxRows           int      `json:"max_rows"`
 
-	// Output format: "json" (default) or "toon" (token-optimized for LLMs)
-	OutputFormat string `json:"output_format"`
-
-	// Export settings
-	ExportMaxRows int    `json:"export_max_rows"` // Row limit for export_sql_to_json (0 = unlimited, default: 10000)
-	ExportDir     string `json:"export_dir"`      // Custom output directory for exported JSON files
-
-	// SSIS ETL project path for .dtsx parsing tools
+	// Global settings (not per-connection)
+	OutputFormat    string `json:"output_format"`
+	ExportMaxRows   int    `json:"export_max_rows"`
+	ExportDir       string `json:"export_dir"`
 	ProjectSSISPath string `json:"project_ssis_path"`
 }
 
-var BlockedTables map[string]bool
-var SensitiveColumns map[string]bool
-var MaxRows int
+// Global settings (not per-connection)
 var OutputFormat string
 var SSISProjectPath string
 var LoadedConfig Config
+var DefaultConnectionName string
+
+// Legacy globals — populated from the default connection for backward compat
+var BlockedTables map[string]bool
+var SensitiveColumns map[string]bool
+var MaxRows int
 
 func LoadConfig() {
 	cfg := loadConfigFile()
 	LoadedConfig = cfg
 
-	BlockedTables = toMap(cfg.BlockedTables)
-	SensitiveColumns = toMap(cfg.SensitiveColumns)
-	MaxRows = cfg.MaxRows
-	if MaxRows == 0 {
+	// If "connections" map is empty but legacy flat fields are present, synthesize
+	if len(cfg.Connections) == 0 {
+		conn := &ConnectionConfig{
+			Server:            cfg.Server,
+			Port:              cfg.Port,
+			Database:          cfg.Database,
+			User:              cfg.User,
+			Password:          cfg.Password,
+			Encrypt:           cfg.Encrypt,
+			ConnectionTimeout: cfg.ConnectionTimeout,
+			BlockedTables:     cfg.BlockedTables,
+			SensitiveColumns:  cfg.SensitiveColumns,
+			MaxRows:           cfg.MaxRows,
+			IsDefault:         true,
+		}
+		cfg.Connections = map[string]*ConnectionConfig{"default": conn}
+		LoadedConfig.Connections = cfg.Connections
+	}
+
+	// Determine default connection name
+	DefaultConnectionName = ""
+	for name, conn := range cfg.Connections {
+		conn.resolveDefaults()
+		if conn.IsDefault {
+			DefaultConnectionName = name
+		}
+	}
+	// If no explicit default and only one connection, use it
+	if DefaultConnectionName == "" {
+		if len(cfg.Connections) == 1 {
+			for name := range cfg.Connections {
+				DefaultConnectionName = name
+			}
+		}
+	}
+
+	// Populate legacy globals from default connection
+	if defConn, ok := cfg.Connections[DefaultConnectionName]; ok {
+		BlockedTables = defConn.BlockedTablesMap
+		SensitiveColumns = defConn.SensitiveColumnsMap
+		MaxRows = defConn.MaxRowsResolved
+	} else {
+		BlockedTables = make(map[string]bool)
+		SensitiveColumns = make(map[string]bool)
 		MaxRows = 100
 	}
 
 	OutputFormat = strings.ToLower(cfg.OutputFormat)
 	if OutputFormat != "toon" {
 		OutputFormat = "json"
-	}
-
-	// Built-in sensitive column defaults if nothing configured
-	if len(SensitiveColumns) == 0 {
-		SensitiveColumns = map[string]bool{
-			"password": true, "password_hash": true,
-			"ssn": true, "credit_card": true,
-			"salary": true, "token": true,
-			"secret": true, "api_key": true,
-		}
 	}
 
 	SSISProjectPath = cfg.ProjectSSISPath
@@ -78,8 +188,16 @@ func LoadConfig() {
 		ExportDirOverride = cfg.ExportDir
 	}
 
-	log.Printf("[CONFIG] blocked_tables=%d sensitive_columns=%d max_rows=%d export_max_rows=%d ssis_project_path=%s",
-		len(BlockedTables), len(SensitiveColumns), MaxRows, ExportMaxRows, SSISProjectPath)
+	log.Printf("[CONFIG] connections=%d default=%q output_format=%s export_max_rows=%d ssis_project_path=%s",
+		len(cfg.Connections), DefaultConnectionName, OutputFormat, ExportMaxRows, SSISProjectPath)
+	for name, conn := range cfg.Connections {
+		marker := ""
+		if name == DefaultConnectionName {
+			marker = " (default)"
+		}
+		log.Printf("[CONFIG]   connection %q%s: server=%s database=%s blocked_tables=%d sensitive_columns=%d max_rows=%d",
+			name, marker, conn.Server, conn.Database, len(conn.BlockedTablesMap), len(conn.SensitiveColumnsMap), conn.MaxRowsResolved)
+	}
 }
 
 func loadConfigFile() Config {
@@ -157,39 +275,4 @@ func splitCSV(s string) []string {
 		}
 	}
 	return result
-}
-
-// BuildConnectionString creates a go-mssqldb URL from config fields.
-// Returns empty string if server is not configured (caller should fall back to env var).
-func (c Config) BuildConnectionString() string {
-	if c.Server == "" {
-		return ""
-	}
-
-	port := c.Port
-	if port == 0 {
-		port = 1433
-	}
-
-	timeout := c.ConnectionTimeout
-	if timeout == 0 {
-		timeout = 30
-	}
-
-	encrypt := "disable"
-	if c.Encrypt {
-		encrypt = "true"
-	}
-
-	connURL := fmt.Sprintf("sqlserver://%s:%s@%s:%d?database=%s&encrypt=%s&connection+timeout=%d",
-		url.PathEscape(c.User),
-		url.PathEscape(c.Password),
-		c.Server,
-		port,
-		url.QueryEscape(c.Database),
-		encrypt,
-		timeout,
-	)
-
-	return connURL
 }

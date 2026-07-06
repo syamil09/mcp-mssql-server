@@ -1,6 +1,6 @@
 # mcp-mssql
 
-> A read-only MCP (Model Context Protocol) server that connects AI agents like Claude Code to Microsoft SQL Server databases — including SSIS ETL package analysis. Single Go binary, zero dependencies, defense-in-depth security.
+> A read-only MCP (Model Context Protocol) server that connects AI agents like Claude Code to Microsoft SQL Server databases — including multi-connection support and SSIS ETL package analysis. Single Go binary, zero dependencies, defense-in-depth security.
 
 ## Architecture
 
@@ -20,6 +20,7 @@ SQL Server is never exposed to the internet. All database traffic stays local. S
 - **Column masking** -- sensitive columns (e.g., `password`, `salary`, `credit_card`) are automatically stripped from query results
 - **Auto row limiting** -- `TOP N` injected into queries missing a row limit (default: 100, configurable)
 - **Audit logging** -- every query logged with `[AUDIT]` tag (status, row count, query text); every table access logged with `[ACCESS]` tag
+- **Multi-connection support** -- define multiple named connections in one config; target any connection per tool call
 - **Per-project config** -- one binary, different `.mcp-mssql-config.json` per project
 - **Parameterized queries** -- `describe_table` uses `@p1` parameters to prevent SQL injection
 - **Single binary** -- no runtime dependencies; share the `.exe` with your team, no Go installation required
@@ -33,13 +34,17 @@ SQL Server is never exposed to the internet. All database traffic stays local. S
 
 ### Database Tools
 
+All database tools accept an optional `connection` parameter to target a specific named connection. If omitted, the default connection is used.
+
 | Tool | Description | Parameters |
 |------|-------------|------------|
-| `query_database` | Execute a SELECT query. Auto-limited, validated, column-masked. | `sql` (required) |
-| `list_tables` | List all queryable tables. Blocked tables excluded. | none |
-| `describe_table` | Get column names, data types, nullability. Parameterized. | `table_name` (required) |
-| `exec_sp` | Execute a read-only stored procedure. SP definition inspected first. | `procedure` (required), `params` |
-| `benchmark_query` | Compare query performance (time + row count, no data returned). | `query1` (required), `query2` |
+| `list_connections` | List all configured connections and which is default. | none |
+| `query_database` | Execute a SELECT query. Auto-limited, validated, column-masked. | `sql` (required), `connection` |
+| `list_tables` | List all queryable tables. Blocked tables excluded. | `connection` |
+| `describe_table` | Get column names, data types, nullability. Parameterized. | `table_name` (required), `connection` |
+| `exec_sp` | Execute a read-only stored procedure. SP definition inspected first. | `procedure` (required), `params`, `connection` |
+| `benchmark_query` | Compare query performance (time + row count, no data returned). | `query1` (required), `query2`, `connection` |
+| `export_sql_to_json` | Export query or SP results to a JSON file. | `sql` or `procedure` (required), `params`, `connection` |
 
 ### SSIS Tools (File-based)
 
@@ -94,6 +99,47 @@ Two files are needed in your project root:
 
 Defines connection credentials, security rules, output format, and SSIS path.
 
+**Multi-connection format (recommended):**
+
+```json
+{
+  "connections": {
+    "mydb_dev": {
+      "server": "16.0.0.8",
+      "port": 1433,
+      "database": "MyDatabase_Dev",
+      "user": "my_user",
+      "password": "my_password",
+      "encrypt": false,
+      "connection_timeout": 240,
+      "blocked_tables": ["users", "audit_log", "api_keys"],
+      "sensitive_columns": ["password", "salary", "token", "secret"],
+      "max_rows": 200,
+      "default": true
+    },
+    "mydb_prod": {
+      "server": "16.0.0.9",
+      "port": 1433,
+      "database": "MyDatabase_Prod",
+      "user": "reader",
+      "password": "my_password",
+      "encrypt": false,
+      "connection_timeout": 240,
+      "blocked_tables": ["users", "audit_log", "api_keys"],
+      "sensitive_columns": ["password", "salary", "token", "secret"],
+      "max_rows": 50,
+      "default": false
+    }
+  },
+  "output_format": "toon",
+  "project_ssis_path": "C:\\path\\to\\SSIS\\project"
+}
+```
+
+Each connection has its own `blocked_tables`, `sensitive_columns`, and `max_rows`. The connection with `"default": true` is used when the `connection` parameter is omitted. If only one connection is defined, it is automatically the default.
+
+**Legacy single-connection format (still supported):**
+
 ```json
 {
   "server": "16.0.0.8",
@@ -103,24 +149,8 @@ Defines connection credentials, security rules, output format, and SSIS path.
   "password": "my_password",
   "encrypt": false,
   "connection_timeout": 240,
-  "blocked_tables": [
-    "users",
-    "user_sessions",
-    "audit_log",
-    "api_keys",
-    "password_resets",
-    "system_config"
-  ],
-  "sensitive_columns": [
-    "password",
-    "password_hash",
-    "salary",
-    "token",
-    "secret",
-    "credit_card",
-    "pin",
-    "api_key"
-  ],
+  "blocked_tables": ["users", "audit_log", "api_keys"],
+  "sensitive_columns": ["password", "salary", "token", "secret"],
   "max_rows": 200,
   "output_format": "toon",
   "project_ssis_path": "C:\\path\\to\\SSIS\\project"
@@ -183,11 +213,14 @@ Special characters in the password must be URL-encoded (e.g., `%` becomes `%25`)
 Example queries:
 
 ```
+> List all configured connections
 > List all tables in the database
+> List tables in the sam_prod connection
 > Describe the orders table
-> Show me the top 5 rows from orders
+> Show me the top 5 rows from orders using the sam_dev connection
 > Execute stored procedure SAM_API_GetData with @id = '123'
-> Compare performance of these two queries
+> Compare performance of these two queries on sam_prod
+> Export orders to JSON from the prod connection
 ```
 
 SSIS examples:
@@ -210,6 +243,8 @@ SSIS examples:
 
 ### Config Fields
 
+**Per-connection fields** (inside each entry under `"connections"`):
+
 | Field | Type | Description |
 |-------|------|-------------|
 | `server` | string | SQL Server hostname or IP |
@@ -218,22 +253,32 @@ SSIS examples:
 | `user` | string | SQL Server username |
 | `password` | string | SQL Server password |
 | `encrypt` | bool | Enable TLS encryption (default: false) |
-| `connection_timeout` | int | Connection timeout in seconds |
+| `connection_timeout` | int | Connection timeout in seconds (default: 30) |
 | `blocked_tables` | string[] | Tables to hide and block from queries |
 | `sensitive_columns` | string[] | Columns to mask in query results |
 | `max_rows` | int | Maximum rows returned per query (default: 100) |
+| `default` | bool | Mark this connection as the default (used when `connection` param is omitted) |
+
+**Global fields** (top-level, not per-connection):
+
+| Field | Type | Description |
+|-------|------|-------------|
 | `output_format` | string | `"json"` (default) or `"toon"` (token-optimized, 30-60% fewer tokens) |
 | `project_ssis_path` | string | Path to local SSIS project directory containing `.dtsx` files |
+| `export_max_rows` | int | Maximum rows for `export_sql_to_json` (default: 10000) |
+| `export_dir` | string | Output directory for exported JSON files (default: `exportDatabaseSql/`) |
 
 ## Project Structure
 
 ```
 mcp-mssql-server/
 ├── main.go          -- entry point, starts stdio MCP server
-├── config.go        -- loads .mcp-mssql-config.json, env var fallback, connection string builder
-├── db.go            -- connection pool, query execution, parameterized queries
+├── config.go        -- loads .mcp-mssql-config.json, multi-connection support, env var fallback
+├── connmgr.go       -- connection manager: per-connection pools, resolves named connection from tool params
+├── db.go            -- query execution, parameterized queries
 ├── security.go      -- query validation, table blocklist, column masking, audit log
-├── tools.go         -- database tools: query_database, list_tables, describe_table, exec_sp, benchmark_query
+├── tools.go         -- database tools: list_connections, query_database, list_tables, describe_table, exec_sp, benchmark_query
+├── export.go        -- export_sql_to_json: query or SP results to JSON file
 ├── ssis.go          -- SSIS tools: package listing, control/data flow parsing, impact check, SSISDB queries
 ├── toon.go          -- TOON output format: token-optimized serialization for flat and nested data
 ├── go.mod           -- module: mcp-mssql (mcp-go v0.45.0, go-mssqldb v1.9.8)
@@ -257,10 +302,12 @@ Seven layers of defense, applied in order for every query:
 ## Audit Log Format
 
 ```
-[CONFIG]   blocked_tables=6 sensitive_columns=8 max_rows=200
-[ACCESS]   table=orders
+[CONFIG] connections=2 default="sam_dev" output_format=toon
+[CONFIG]   connection "sam_dev" (default): server=16.0.0.8 database=SAM_Dev blocked_tables=6 sensitive_columns=8 max_rows=200
+[CONFIG]   connection "sam_prod": server=16.0.0.9 database=SAM_Prod blocked_tables=6 sensitive_columns=8 max_rows=50
+[ACCESS]   table=orders connection=sam_dev
 [AUDIT]    time=2026-03-25T14:22:00Z status=SUCCESS rows=5 query="SELECT TOP 5 ..." error=""
-[ACCESS]   table=users
+[ACCESS]   table=users connection=sam_dev
 [AUDIT]    time=2026-03-25T14:23:00Z status=BLOCKED rows=0 query="SELECT * FROM users" error="access to table 'users' is not permitted"
 [SECURITY] masked sensitive column: salary
 ```

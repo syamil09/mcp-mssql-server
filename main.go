@@ -11,35 +11,53 @@ func main() {
 	// Load .mcp-mssql-config.json (or env var fallback)
 	LoadConfig()
 
-	// Priority: config file credentials > MSSQL_CONNECTION_STRING env var
-	connString := LoadedConfig.BuildConnectionString()
-	if connString != "" {
-		log.Printf("[CONNECT] Using credentials from .mcp-mssql-config.json (server=%s database=%s user=%s)",
-			LoadedConfig.Server, LoadedConfig.Database, LoadedConfig.User)
-	} else {
-		connString = os.Getenv("MSSQL_CONNECTION_STRING")
+	// Support env var fallback for single-connection mode
+	if defConn, ok := LoadedConfig.Connections[DefaultConnectionName]; ok && defConn.Server == "" {
+		connString := os.Getenv("MSSQL_CONNECTION_STRING")
 		if connString != "" {
-			log.Println("[CONNECT] Using MSSQL_CONNECTION_STRING env var")
+			log.Println("[CONNECT] Using MSSQL_CONNECTION_STRING env var for default connection")
+			defConn.RawConnString = connString
 		}
 	}
-	if connString == "" {
+
+	// Verify at least one connection is configured
+	hasServer := false
+	for _, conn := range LoadedConfig.Connections {
+		if conn.Server != "" || conn.RawConnString != "" {
+			hasServer = true
+			break
+		}
+	}
+	if !hasServer {
 		log.Fatal("No database credentials found. Set credentials in .mcp-mssql-config.json or MSSQL_CONNECTION_STRING env var")
 	}
 
-	db, err := NewDatabase(connString)
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
-	}
-	log.Println("Connected to SQL Server successfully")
+	cm := NewConnectionManager(LoadedConfig.Connections, DefaultConnectionName)
+	defer cm.Close()
 
-	s := server.NewMCPServer("mcp-mssql", "3.0.0",
-		server.WithInstructions(`You are connected to a SQL Server database via mcp-mssql.
+	// Eagerly connect the default connection (fail-fast if config is wrong)
+	if DefaultConnectionName != "" {
+		_, _, err := cm.GetConnection("")
+		if err != nil {
+			log.Fatalf("Failed to connect default connection '%s': %v", DefaultConnectionName, err)
+		}
+		log.Println("Connected to SQL Server successfully")
+	}
+
+	s := server.NewMCPServer("mcp-mssql", "4.0.0",
+		server.WithInstructions(`You are connected to one or more SQL Server databases via mcp-mssql.
 You can only READ data — no writes, updates, or deletions are possible.
 Always be conservative with row counts. Start with small limits before
 requesting large datasets. Some tables and columns may be restricted
 for security reasons — respect those boundaries.
 
+Multi-connection support:
+- Use list_connections to see all available database connections
+- Pass the "connection" parameter to any DB tool to target a specific connection
+- If you omit "connection", the default connection is used
+
 Available tools:
+- list_connections: See all configured database connections and which is default
 - list_tables: See all queryable tables
 - describe_table: Get column names and types for a table
 - query_database: Execute SELECT queries (supports SELECT, WITH, and DECLARE)
@@ -78,9 +96,9 @@ Guidelines:
 - You can use DECLARE with query_database for variable-based SELECT queries`),
 	)
 
-	registerTools(s, db)
+	registerTools(s, cm)
 
-	log.Println("mcp-mssql v3.0.0 starting (stdio transport)...")
+	log.Println("mcp-mssql v4.0.0 starting (stdio transport)...")
 	if err := server.ServeStdio(s); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}

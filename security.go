@@ -19,7 +19,7 @@ var dangerousPattern = regexp.MustCompile(
 	`(?i)\b(INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC|EXECUTE|XP_CMDSHELL|SP_|OPENROWSET|BULK\s+INSERT|MERGE)\b`,
 )
 
-func ValidateQuery(sql string) error {
+func ValidateQuery(sql string, blockedTables map[string]bool) error {
 	normalized := strings.TrimSpace(sql)
 	upper := strings.ToUpper(normalized)
 
@@ -34,8 +34,8 @@ func ValidateQuery(sql string) error {
 	}
 
 	// Rule 3: Check against blocklist
-	if len(BlockedTables) > 0 {
-		if err := checkTableAccess(upper); err != nil {
+	if len(blockedTables) > 0 {
+		if err := checkTableAccess(upper, blockedTables); err != nil {
 			return err
 		}
 	}
@@ -43,7 +43,7 @@ func ValidateQuery(sql string) error {
 	return nil
 }
 
-func checkTableAccess(upperQuery string) error {
+func checkTableAccess(upperQuery string, blockedTables map[string]bool) error {
 	words := strings.FieldsFunc(upperQuery, func(r rune) bool {
 		return unicode.IsSpace(r) || r == ',' || r == '(' || r == ')'
 	})
@@ -62,7 +62,7 @@ func checkTableAccess(upperQuery string) error {
 			// Log every table accessed — review periodically for new sensitive tables
 			log.Printf("[ACCESS] table=%s", tableName)
 
-			if BlockedTables[tableName] {
+			if blockedTables[tableName] {
 				return fmt.Errorf("access to table '%s' is not permitted", tableName)
 			}
 			captureNext = false
@@ -71,12 +71,12 @@ func checkTableAccess(upperQuery string) error {
 	return nil
 }
 
-func MaskSensitiveColumns(result *QueryResult) *QueryResult {
+func MaskSensitiveColumns(result *QueryResult, sensitiveColumns map[string]bool) *QueryResult {
 	maskedIndices := make(map[int]bool)
 	safeColumns := []string{}
 
 	for i, col := range result.Columns {
-		if SensitiveColumns[strings.ToLower(col)] {
+		if sensitiveColumns[strings.ToLower(col)] {
 			maskedIndices[i] = true
 			log.Printf("[SECURITY] masked sensitive column: %s", col)
 		} else {
@@ -92,7 +92,7 @@ func MaskSensitiveColumns(result *QueryResult) *QueryResult {
 	for i, row := range result.Rows {
 		safeRow := make(map[string]interface{})
 		for col, val := range row {
-			if !SensitiveColumns[strings.ToLower(col)] {
+			if !sensitiveColumns[strings.ToLower(col)] {
 				safeRow[col] = val
 			}
 		}

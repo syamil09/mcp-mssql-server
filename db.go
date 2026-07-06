@@ -39,6 +39,10 @@ type QueryResult struct {
 	Count   int                      `json:"count"`
 }
 
+func (db *Database) Close() error {
+	return db.pool.Close()
+}
+
 func (db *Database) ExecuteQuery(ctx context.Context, query string) (*QueryResult, error) {
 	rows, err := db.pool.QueryContext(ctx, query)
 	if err != nil {

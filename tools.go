@@ -12,7 +12,17 @@ import (
 	"github.com/mark3labs/mcp-go/server"
 )
 
-func registerTools(s *server.MCPServer, db *Database) {
+func registerTools(s *server.MCPServer, cm *ConnectionManager) {
+	// Connection parameter description shared by all DB tools
+	connDesc := mcp.Description("Connection name from config. Uses default if omitted. Use list_connections to see available connections.")
+
+	s.AddTool(
+		mcp.NewTool("list_connections",
+			mcp.WithDescription("List all available database connections and which one is the default."),
+		),
+		handleListConnections(cm),
+	)
+
 	s.AddTool(
 		mcp.NewTool("benchmark_query",
 			mcp.WithDescription("Benchmark one or two SQL queries and return only execution time and row count (no data). Useful for comparing query performance, e.g. old vs new version of a stored procedure or query refactoring. Only SELECT/WITH/DECLARE queries are allowed."),
@@ -24,8 +34,9 @@ func registerTools(s *server.MCPServer, db *Database) {
 				mcp.Description("Optional label for query_a (e.g. 'old version'). Default: 'Query A'.")),
 			mcp.WithString("label_b",
 				mcp.Description("Optional label for query_b (e.g. 'new version'). Default: 'Query B'.")),
+			mcp.WithString("connection", connDesc),
 		),
-		handleBenchmark(db),
+		handleBenchmark(cm),
 	)
 
 	s.AddTool(
@@ -33,8 +44,9 @@ func registerTools(s *server.MCPServer, db *Database) {
 			mcp.WithDescription("Execute a read-only SQL query against the SQL Server database. Supports SELECT, WITH (CTE), and DECLARE/SET variable blocks ending in SELECT. Semicolons are allowed for ;WITH CTE and multi-statement blocks. Data-modifying keywords (INSERT, UPDATE, DELETE, DROP, etc.) are blocked. Results are automatically limited and sensitive columns are masked. For stored procedures, use exec_sp instead."),
 			mcp.WithString("sql", mcp.Required(),
 				mcp.Description("The SQL query to execute. Must start with SELECT, WITH, or DECLARE.")),
+			mcp.WithString("connection", connDesc),
 		),
-		handleQuery(db),
+		handleQuery(cm),
 	)
 
 	s.AddTool(
@@ -44,15 +56,17 @@ func registerTools(s *server.MCPServer, db *Database) {
 				mcp.Description("The stored procedure name, e.g. 'dbo.SAM_API_GetDataProductBySalesman' or 'SAM_API_GetDataProductBySalesman'.")),
 			mcp.WithString("params",
 				mcp.Description("Parameters as SQL fragment, e.g. \"@szEmployeeId = '10002088', @dtDate = '2024-01-01'\". Leave empty if the SP takes no parameters.")),
+			mcp.WithString("connection", connDesc),
 		),
-		handleExecSP(db),
+		handleExecSP(cm),
 	)
 
 	s.AddTool(
 		mcp.NewTool("list_tables",
 			mcp.WithDescription("List all tables available for querying. Blocked tables are excluded from the list."),
+			mcp.WithString("connection", connDesc),
 		),
-		handleListTables(db),
+		handleListTables(cm),
 	)
 
 	s.AddTool(
@@ -60,8 +74,9 @@ func registerTools(s *server.MCPServer, db *Database) {
 			mcp.WithDescription("Get column names and data types for a specific table. Blocked tables and sensitive columns are excluded."),
 			mcp.WithString("table_name", mcp.Required(),
 				mcp.Description("Name of the table to describe.")),
+			mcp.WithString("connection", connDesc),
 		),
-		handleDescribeTable(db),
+		handleDescribeTable(cm),
 	)
 
 	s.AddTool(
@@ -79,27 +94,65 @@ func registerTools(s *server.MCPServer, db *Database) {
 				mcp.Description("Extract JSON from this single column as the output list. Each row's value becomes a top-level JSON object (or array elements are flattened) in the output file.")),
 			mcp.WithString("filename",
 				mcp.Description("Custom output filename (without extension). Default: <source_name>_<timestamp>.json")),
+			mcp.WithString("connection", connDesc),
 		),
-		handleExportJSON(db),
+		handleExportJSON(cm),
 	)
 
-	registerSSISTools(s, db)
+	registerSSISTools(s, cm)
 }
 
-func handleQuery(db *Database) server.ToolHandlerFunc {
+func handleListConnections(cm *ConnectionManager) server.ToolHandlerFunc {
 	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		type connInfo struct {
+			Name      string `json:"name"`
+			Server    string `json:"server"`
+			Database  string `json:"database"`
+			User      string `json:"user"`
+			IsDefault bool   `json:"is_default"`
+		}
+
+		var connections []connInfo
+		for _, name := range cm.ListConnections() {
+			cfg := cm.Configs()[name]
+			connections = append(connections, connInfo{
+				Name:      name,
+				Server:    cfg.Server,
+				Database:  cfg.Database,
+				User:      cfg.User,
+				IsDefault: name == cm.DefaultName(),
+			})
+		}
+
+		out := map[string]interface{}{
+			"connections": connections,
+			"count":       len(connections),
+			"default":     cm.DefaultName(),
+		}
+		jsonBytes, _ := json.MarshalIndent(out, "", "  ")
+		return mcp.NewToolResultText(string(jsonBytes)), nil
+	}
+}
+
+func handleQuery(cm *ConnectionManager) server.ToolHandlerFunc {
+	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		db, connCfg, err := resolveDB(cm, req)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
 		args := req.GetArguments()
 		sqlQuery, ok := args["sql"].(string)
 		if !ok || strings.TrimSpace(sqlQuery) == "" {
 			return mcp.NewToolResultError("sql parameter is required"), nil
 		}
 
-		if err := ValidateQuery(sqlQuery); err != nil {
+		if err := ValidateQuery(sqlQuery, connCfg.BlockedTablesMap); err != nil {
 			AuditLog(sqlQuery, false, 0, err)
 			return mcp.NewToolResultError(fmt.Sprintf("Query blocked: %s", err.Error())), nil
 		}
 
-		finalQuery := addRowLimitIfMissing(sqlQuery, MaxRows)
+		finalQuery := addRowLimitIfMissing(sqlQuery, connCfg.MaxRowsResolved)
 
 		result, err := db.ExecuteQuery(ctx, finalQuery)
 		if err != nil {
@@ -107,7 +160,7 @@ func handleQuery(db *Database) server.ToolHandlerFunc {
 			return mcp.NewToolResultError(fmt.Sprintf("Query failed: %s", err.Error())), nil
 		}
 
-		safeResult := MaskSensitiveColumns(result)
+		safeResult := MaskSensitiveColumns(result, connCfg.SensitiveColumnsMap)
 		AuditLog(sqlQuery, true, safeResult.Count, nil)
 
 		output, err := serializeResult(safeResult)
@@ -118,8 +171,13 @@ func handleQuery(db *Database) server.ToolHandlerFunc {
 	}
 }
 
-func handleListTables(db *Database) server.ToolHandlerFunc {
+func handleListTables(cm *ConnectionManager) server.ToolHandlerFunc {
 	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		db, connCfg, err := resolveDB(cm, req)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
 		result, err := db.ExecuteQuery(ctx,
 			"SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_SCHEMA, TABLE_NAME",
 		)
@@ -132,7 +190,7 @@ func handleListTables(db *Database) server.ToolHandlerFunc {
 			schema := fmt.Sprintf("%v", row["TABLE_SCHEMA"])
 			name := fmt.Sprintf("%v", row["TABLE_NAME"])
 			nameLower := strings.ToLower(name)
-			if !BlockedTables[nameLower] {
+			if !connCfg.BlockedTablesMap[nameLower] {
 				available = append(available, fmt.Sprintf("%s.%s", schema, name))
 			}
 		}
@@ -147,15 +205,20 @@ func handleListTables(db *Database) server.ToolHandlerFunc {
 	}
 }
 
-func handleDescribeTable(db *Database) server.ToolHandlerFunc {
+func handleDescribeTable(cm *ConnectionManager) server.ToolHandlerFunc {
 	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		db, connCfg, err := resolveDB(cm, req)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
 		args := req.GetArguments()
 		tableName, ok := args["table_name"].(string)
 		if !ok {
 			return mcp.NewToolResultError("table_name parameter is required"), nil
 		}
 
-		if BlockedTables[strings.ToLower(tableName)] {
+		if connCfg.BlockedTablesMap[strings.ToLower(tableName)] {
 			return mcp.NewToolResultError(fmt.Sprintf("table '%s' is not accessible", tableName)), nil
 		}
 
@@ -172,14 +235,19 @@ func handleDescribeTable(db *Database) server.ToolHandlerFunc {
 			return mcp.NewToolResultError(fmt.Sprintf("failed to describe table: %s", err.Error())), nil
 		}
 
-		safeResult := MaskSensitiveColumns(result)
+		safeResult := MaskSensitiveColumns(result, connCfg.SensitiveColumnsMap)
 		output, _ := serializeResult(safeResult)
 		return mcp.NewToolResultText(output), nil
 	}
 }
 
-func handleExecSP(db *Database) server.ToolHandlerFunc {
+func handleExecSP(cm *ConnectionManager) server.ToolHandlerFunc {
 	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		db, connCfg, err := resolveDB(cm, req)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
 		args := req.GetArguments()
 
 		procedure, _ := args["procedure"].(string)
@@ -196,7 +264,7 @@ func handleExecSP(db *Database) server.ToolHandlerFunc {
 			return mcp.NewToolResultError(err.Error()), nil
 		}
 
-		safeResult := MaskSensitiveColumns(result)
+		safeResult := MaskSensitiveColumns(result, connCfg.SensitiveColumnsMap)
 		AuditLog(execSQL, true, safeResult.Count, nil)
 
 		output, err := serializeResult(safeResult)
@@ -207,8 +275,13 @@ func handleExecSP(db *Database) server.ToolHandlerFunc {
 	}
 }
 
-func handleBenchmark(db *Database) server.ToolHandlerFunc {
+func handleBenchmark(cm *ConnectionManager) server.ToolHandlerFunc {
 	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		db, connCfg, err := resolveDB(cm, req)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
 		args := req.GetArguments()
 
 		queryA, _ := args["query_a"].(string)
@@ -222,7 +295,7 @@ func handleBenchmark(db *Database) server.ToolHandlerFunc {
 		}
 
 		// Validate and run query A
-		if err := ValidateQuery(queryA); err != nil {
+		if err := ValidateQuery(queryA, connCfg.BlockedTablesMap); err != nil {
 			return mcp.NewToolResultError(fmt.Sprintf("%s blocked: %s", labelA, err.Error())), nil
 		}
 
@@ -242,7 +315,7 @@ func handleBenchmark(db *Database) server.ToolHandlerFunc {
 				labelB = "Query B"
 			}
 
-			if err := ValidateQuery(queryB); err != nil {
+			if err := ValidateQuery(queryB, connCfg.BlockedTablesMap); err != nil {
 				return mcp.NewToolResultError(fmt.Sprintf("%s blocked: %s", labelB, err.Error())), nil
 			}
 

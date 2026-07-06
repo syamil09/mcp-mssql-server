@@ -593,8 +593,13 @@ func handleSSISTableRefs() server.ToolHandlerFunc {
 	}
 }
 
-func handleSSISListDeployed(db *Database) server.ToolHandlerFunc {
+func handleSSISListDeployed(cm *ConnectionManager) server.ToolHandlerFunc {
 	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		db, _, err := resolveDB(cm, req)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
 		args := req.GetArguments()
 		folderName, _ := args["folder_name"].(string)
 		projectName, _ := args["project_name"].(string)
@@ -649,8 +654,13 @@ func handleSSISListDeployed(db *Database) server.ToolHandlerFunc {
 	}
 }
 
-func handleSSISExecutionHistory(db *Database) server.ToolHandlerFunc {
+func handleSSISExecutionHistory(cm *ConnectionManager) server.ToolHandlerFunc {
 	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		db, _, err := resolveDB(cm, req)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
 		args := req.GetArguments()
 		packageName, _ := args["package_name"].(string)
 		if packageName == "" {
@@ -728,8 +738,13 @@ func handleSSISExecutionHistory(db *Database) server.ToolHandlerFunc {
 	}
 }
 
-func handleSSISSchemaValidate(db *Database) server.ToolHandlerFunc {
+func handleSSISSchemaValidate(cm *ConnectionManager) server.ToolHandlerFunc {
 	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		db, _, err := resolveDB(cm, req)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
 		args := req.GetArguments()
 		packageName, _ := args["package_name"].(string)
 		if packageName == "" {
@@ -923,7 +938,9 @@ func cleanTableName(table string) string {
 
 // ── Tool Registration ─────────────────────────────────────────────────────────
 
-func registerSSISTools(s *server.MCPServer, db *Database) {
+func registerSSISTools(s *server.MCPServer, cm *ConnectionManager) {
+	connDesc := mcp.Description("Connection name from config. Uses default if omitted.")
+
 	s.AddTool(
 		mcp.NewTool("ssis_list_packages",
 			mcp.WithDescription("List all SSIS .dtsx packages in the configured project_ssis_path."),
@@ -969,8 +986,9 @@ func registerSSISTools(s *server.MCPServer, db *Database) {
 			mcp.WithDescription("Cross-reference a SSIS package against the live database schema. Reports ERROR for tables that exist in SSIS but NOT in DB, and WARNING for columns referenced in SSIS but missing from DB. Use to detect schema drift between ETL packages and the actual database."),
 			mcp.WithString("package_name", mcp.Required(),
 				mcp.Description("Package name with or without .dtsx")),
+			mcp.WithString("connection", connDesc),
 		),
-		handleSSISSchemaValidate(db),
+		handleSSISSchemaValidate(cm),
 	)
 	s.AddTool(
 		mcp.NewTool("ssis_list_deployed",
@@ -979,8 +997,9 @@ func registerSSISTools(s *server.MCPServer, db *Database) {
 				mcp.Description("Filter by SSISDB folder name to get full details, e.g. 'SAM FIRESTORE'")),
 			mcp.WithString("project_name",
 				mcp.Description("Filter by SSISDB project name to get full details, e.g. 'SAM_FIRESTORE_ETL'")),
+			mcp.WithString("connection", connDesc),
 		),
-		handleSSISListDeployed(db),
+		handleSSISListDeployed(cm),
 	)
 	s.AddTool(
 		mcp.NewTool("ssis_execution_history",
@@ -991,7 +1010,8 @@ func registerSSISTools(s *server.MCPServer, db *Database) {
 				mcp.Description("Filter by status: 'failed', 'succeeded', 'running', 'cancelled'")),
 			mcp.WithString("limit",
 				mcp.Description("Max rows to return (default: 20)")),
+			mcp.WithString("connection", connDesc),
 		),
-		handleSSISExecutionHistory(db),
+		handleSSISExecutionHistory(cm),
 	)
 }

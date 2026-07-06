@@ -77,8 +77,13 @@ func validateAndExecSP(ctx context.Context, db *Database, procedure, params stri
 	return result, execSQL, nil
 }
 
-func handleExportJSON(db *Database) server.ToolHandlerFunc {
+func handleExportJSON(cm *ConnectionManager) server.ToolHandlerFunc {
 	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		db, connCfg, err := resolveDB(cm, req)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+
 		args := req.GetArguments()
 
 		sqlQuery, _ := args["sql"].(string)
@@ -119,7 +124,7 @@ func handleExportJSON(db *Database) server.ToolHandlerFunc {
 
 		if sqlQuery != "" {
 			// SQL query mode
-			if err := ValidateQuery(sqlQuery); err != nil {
+			if err := ValidateQuery(sqlQuery, connCfg.BlockedTablesMap); err != nil {
 				AuditLog("EXPORT: "+sqlQuery, false, 0, err)
 				return mcp.NewToolResultError(fmt.Sprintf("Query blocked: %s", err.Error())), nil
 			}
@@ -151,7 +156,7 @@ func handleExportJSON(db *Database) server.ToolHandlerFunc {
 		}
 
 		// Apply sensitive column masking
-		result = MaskSensitiveColumns(result)
+		result = MaskSensitiveColumns(result, connCfg.SensitiveColumnsMap)
 
 		// Validate source_column exists
 		if sourceColumn != "" {
