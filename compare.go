@@ -474,7 +474,7 @@ func handleCompareResults(cm *ConnectionManager) server.ToolHandlerFunc {
 		report.Files.Json = absFile
 
 		AuditLog(fmt.Sprintf("COMPARE: %s vs %s", labelA, labelB), true, resultA.Count+resultB.Count, nil)
-		log.Printf("[COMPARE] %s vs %s -> %s (%d diffs)", labelA, labelB, absFile, report.Summary.MatchPct)
+		log.Printf("[COMPARE] %s vs %s -> %s (match: %.2f%%)", labelA, labelB, absFile, report.Summary.MatchPct)
 
 		finalReport, _ := json.MarshalIndent(report, "", "  ")
 		return mcp.NewToolResultText(string(finalReport)), nil

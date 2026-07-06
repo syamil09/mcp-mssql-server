@@ -1,0 +1,39 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": true,
+  "mcp": {
+    "mssql-server": {
+      "type": "local",
+      "enabled": true,
+      "command": [
+        "./mcp-mssql.exe",
+        "./.mcp-mssql-config.json"
+      ]
+    }
+  },
+  "plugin": ["superpowers@git+https://github.com/obra/superpowers.git"],
+  "provider": {
+    "databyte": {
+      "type": "api",
+      "key": "Bearer sk-db-urcSOum3NqmUQcB3dvsZfgIZckvQcSgcishvvdnPQ1hrPopg",
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "https://ai.databyte.co.id/v1",
+        "apiKey": "sk-db-urcSOum3NqmUQcB3dvsZfgIZckvQcSgcishvvdnPQ1hrPopg",
+        "name": "databyte"
+      },
+      "models": {
+        "databyte-m1": {
+          "id": "databyte-m1",
+          "max_tokens": 50000,
+          "name": "DataByte M1"
+        },
+        "deepseek-v4-flash": {
+          "id": "deepseek-v4-flash",
+          "max_tokens": 50000,
+          "name": "deepseek-v4-flash"
+        }
+      }
+    }
+  }
+}
