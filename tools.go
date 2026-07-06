@@ -99,6 +99,22 @@ func registerTools(s *server.MCPServer, cm *ConnectionManager) {
 		handleExportJSON(cm),
 	)
 
+	s.AddTool(
+		mcp.NewTool("export_sql_to_csv",
+			mcp.WithDescription("Export SQL query or stored procedure results to a CSV file. Files are saved to the exportDatabaseSql/ folder."),
+			mcp.WithString("sql",
+				mcp.Description("SQL SELECT query to execute and export. Mutually exclusive with 'procedure'.")),
+			mcp.WithString("procedure",
+				mcp.Description("Stored procedure name to execute and export. Mutually exclusive with 'sql'.")),
+			mcp.WithString("params",
+				mcp.Description("Parameters for the stored procedure, e.g. \"@szEmployeeId = '10002088'\".")),
+			mcp.WithString("filename",
+				mcp.Description("Custom output filename (without extension). Default: <source_name>_<timestamp>.csv")),
+			mcp.WithString("connection", connDesc),
+		),
+		handleExportCSV(cm),
+	)
+
 	registerSSISTools(s, cm)
 }
 
