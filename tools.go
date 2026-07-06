@@ -115,6 +115,37 @@ func registerTools(s *server.MCPServer, cm *ConnectionManager) {
 		handleExportCSV(cm),
 	)
 
+	s.AddTool(
+		mcp.NewTool("compare_result_sets",
+			mcp.WithDescription("Compare two result sets from SQL queries or stored procedures (possibly on different connections). Produces a deterministic cell-by-cell diff report. Internally exports both sources to CSV, compares, saves JSON to exportDatabaseSql/."),
+			mcp.WithString("sql_a",
+				mcp.Description("First SQL SELECT query. Mutually exclusive with 'procedure_a'.")),
+			mcp.WithString("procedure_a",
+				mcp.Description("First stored procedure. Mutually exclusive with 'sql_a'.")),
+			mcp.WithString("params_a",
+				mcp.Description("Parameters for first SP.")),
+			mcp.WithString("connection_a",
+				mcp.Description("Connection for source A. Uses default if omitted.")),
+			mcp.WithString("sql_b",
+				mcp.Description("Second SQL SELECT query. Mutually exclusive with 'procedure_b'.")),
+			mcp.WithString("procedure_b",
+				mcp.Description("Second stored procedure. Mutually exclusive with 'sql_b'.")),
+			mcp.WithString("params_b",
+				mcp.Description("Parameters for second SP.")),
+			mcp.WithString("connection_b",
+				mcp.Description("Connection for source B. Uses default if omitted.")),
+			mcp.WithString("key_column",
+				mcp.Description("Column name for matching rows (e.g. 'id'). Omit to compare by row index.")),
+			mcp.WithString("label_a",
+				mcp.Description("Label for source A (affects CSV filename). Default: connection name.")),
+			mcp.WithString("label_b",
+				mcp.Description("Label for source B (affects CSV filename). Default: connection name.")),
+			mcp.WithString("filename",
+				mcp.Description("Custom filename for JSON report (without extension). Default: compare_<labelA>_vs_<labelB>_<timestamp>.json")),
+		),
+		handleCompareResults(cm),
+	)
+
 	registerSSISTools(s, cm)
 }
 
