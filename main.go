@@ -87,12 +87,24 @@ Export tools:
   Example: export_sql_to_json(procedure: "dbo.GetProducts", params: "@categoryId = 1")
   Example: export_sql_to_json(sql: "SELECT * FROM Products", json_columns: "metadata,config")
   Example: export_sql_to_json(procedure: "dbo.GetRawData", source_column: "rawdata")
+- export_sql_to_csv: Export query or SP results to CSV. Same params as export_sql_to_json
+  but outputs CSV instead of JSON.
+  Example: export_sql_to_csv(procedure: "dbo.GetProducts", params: "@categoryId = 1")
+
+Compare tools:
+- compare_result_sets: Compare two result sets cell-by-cell. Run two queries (possibly
+  on different connections), get a detailed diff report saved as JSON. Supports row
+  matching by index or key column. Use for dev-vs-prod validation or query refactoring.
+  Example: compare_result_sets(sql_a: "SELECT * FROM Orders", connection_a: "dev",
+    sql_b: "SELECT * FROM Orders", connection_b: "production", key_column: "OrderId")
 
 Guidelines:
 - For simple data retrieval, prefer query_database with SELECT
 - For calling stored procedures, use exec_sp — do NOT use OPENROWSET
 - For performance comparison, use benchmark_query
 - For exporting data to JSON files, use export_sql_to_json
+- For exporting data to CSV, use export_sql_to_csv
+- For comparing two result sets, use compare_result_sets
 - You can use DECLARE with query_database for variable-based SELECT queries`),
 	)
 
