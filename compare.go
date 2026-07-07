@@ -26,9 +26,10 @@ type comparisonReport struct {
 type comparisonSummary struct {
 	Timestamp string  `json:"timestamp"`
 	Match     bool    `json:"match"`
-	MatchPct  float64 `json:"match_percent"`
-	RowCountA int     `json:"row_count_a"`
-	RowCountB int     `json:"row_count_b"`
+	MatchPct  float64  `json:"match_percent"`
+	RowCountA int      `json:"row_count_a"`
+	RowCountB int      `json:"row_count_b"`
+	Warnings  []string `json:"warnings,omitempty"`
 }
 
 type columnSection struct {
@@ -143,6 +144,21 @@ func orderedIntersect(a, b []string) []string {
 	return out
 }
 
+func findDuplicateKeys(result *QueryResult, keyCol string) map[string]int {
+	counts := make(map[string]int)
+	for _, row := range result.Rows {
+		key := fmt.Sprintf("%v", row[keyCol])
+		counts[key]++
+	}
+	dups := make(map[string]int)
+	for k, c := range counts {
+		if c > 1 {
+			dups[k] = c
+		}
+	}
+	return dups
+}
+
 func executeSource(ctx context.Context, db *Database, connCfg *ConnectionConfig, sql, procedure, params string) (*QueryResult, string, error) {
 	if sql != "" && procedure != "" {
 		return nil, "", fmt.Errorf("provide either sql or procedure, not both")
@@ -200,12 +216,35 @@ func compareResultSets(resultA, resultB *QueryResult, keyCol string) comparisonR
 	commonCols := report.Columns.Common
 
 	if keyCol != "" {
-		diffs, idents, onlyA, onlyB := compareByKey(resultA, resultB, keyCol, commonCols)
-		report.Diffs = diffs
-		report.Rows.Identical = idents
-		report.Rows.Different = len(diffs)
-		report.Rows.OnlyInA = onlyA
-		report.Rows.OnlyInB = onlyB
+		dupsA := findDuplicateKeys(resultA, keyCol)
+		dupsB := findDuplicateKeys(resultB, keyCol)
+
+		if len(dupsA) > 0 || len(dupsB) > 0 {
+			for k, c := range dupsA {
+				report.Summary.Warnings = append(report.Summary.Warnings,
+					fmt.Sprintf("Key column '%s' is not unique in source A: value '%s' appears %d time(s)", keyCol, k, c))
+			}
+			for k, c := range dupsB {
+				report.Summary.Warnings = append(report.Summary.Warnings,
+					fmt.Sprintf("Key column '%s' is not unique in source B: value '%s' appears %d time(s)", keyCol, k, c))
+			}
+			report.Summary.Warnings = append(report.Summary.Warnings,
+				"Fell back to index-based comparison. Use a unique key column for reliable row matching.")
+
+			diffs, idents, onlyA, onlyB := compareByIndex(resultA, resultB, commonCols)
+			report.Diffs = diffs
+			report.Rows.Identical = idents
+			report.Rows.Different = len(diffs)
+			report.Rows.OnlyInA = onlyA
+			report.Rows.OnlyInB = onlyB
+		} else {
+			diffs, idents, onlyA, onlyB := compareByKey(resultA, resultB, keyCol, commonCols)
+			report.Diffs = diffs
+			report.Rows.Identical = idents
+			report.Rows.Different = len(diffs)
+			report.Rows.OnlyInA = onlyA
+			report.Rows.OnlyInB = onlyB
+		}
 	} else {
 		diffs, idents, onlyA, onlyB := compareByIndex(resultA, resultB, commonCols)
 		report.Diffs = diffs

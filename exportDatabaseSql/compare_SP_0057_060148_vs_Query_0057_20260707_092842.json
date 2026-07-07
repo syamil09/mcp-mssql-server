@@ -1,0 +1,3190 @@
+{
+  "summary": {
+    "timestamp": "2026-07-07T02:28:42Z",
+    "match": false,
+    "match_percent": 94.62,
+    "row_count_a": 27,
+    "row_count_b": 428
+  },
+  "columns": {
+    "identical": false,
+    "common": [
+      "szFTOId",
+      "shItemNumber",
+      "szLatitude",
+      "szLongitude",
+      "szCustId",
+      "szName",
+      "CustszContactPerson",
+      "CustszAddress_1",
+      "CustszAddress_2",
+      "CustszDistrict",
+      "CustszCity",
+      "CustszZipCode",
+      "CustszState",
+      "CustszCountry",
+      "CustszPhoneNo_1",
+      "CustszPhoneNo_2",
+      "CustszMobileNo",
+      "CustszEmail",
+      "szCategory_1",
+      "szCategory_2",
+      "szCategory_3",
+      "szCategory_4",
+      "szCategory_5",
+      "szCategory_6",
+      "szCategory_7",
+      "szCategory_8",
+      "szCategory_9",
+      "szCategory_10",
+      "szCategory_11",
+      "szCategory_12",
+      "szCategory_13",
+      "szCategory_14",
+      "szCategory_15",
+      "szCategory_1Desc",
+      "szCategory_2Desc",
+      "szCategory_5Desc",
+      "szCategory_6Desc",
+      "szCategory_8Desc",
+      "szCategory_9Desc",
+      "szDlvWorkplaceId",
+      "szBarcodeId",
+      "szPaymentTermId",
+      "decCreditLimit",
+      "szNPWP",
+      "szNoKTP",
+      "intPrintedMaxPaymentDay",
+      "decMinOrderAmount",
+      "bAllowToCredit",
+      "dtmFTO",
+      "szEmployeeId",
+      "szWorkplaceId",
+      "szTeamId",
+      "szDepartmentId",
+      "szRT",
+      "szRW",
+      "szNamaKTP",
+      "TaxszAddress_1",
+      "TaxszAddress_2",
+      "TaxszDistrict",
+      "szCustomerType",
+      "bIsCustomerMT",
+      "szActivityStatusOrder",
+      "bAutoOrderWithStock",
+      "bShowPopupInformation",
+      "szMessagePopupInformation",
+      "shOrderMissionMinOrder",
+      "bOrderMissionEnableSearch",
+      "bIsValidateRingkor",
+      "bEnableOrderRangkul",
+      "bDisableOrderSAM",
+      "bRegisteredMsIdo",
+      "bIsOrderRangkulThisMonth",
+      "bIsCARangkul",
+      "szCCPrevisit1Value",
+      "szCCPrevisit2Value"
+    ],
+    "only_in_a": [
+      "szTOTrackingId",
+      "szReasonId",
+      "szDescription",
+      "bSuccess",
+      "bStarted",
+      "dtmStartVisit",
+      "dtmEndVisit",
+      "decVisitSpendTime",
+      "szBarcodeScanFailReasonId",
+      "szGPSScanFailReasonId",
+      "bBarcodeScanSuccess",
+      "bGPSScanSuccess",
+      "decJourneySpendTime",
+      "CustszRoomNo",
+      "CustszFloor",
+      "CustszBuilding",
+      "CustszFaxNo",
+      "CustszWebSite",
+      "szFCallId",
+      "bSoldToCust",
+      "bDeliverToCust",
+      "bInvoiceToCust",
+      "bCollectToCust",
+      "szSoldToCustId",
+      "szDeliverToCustId",
+      "szInvoiceToCustId",
+      "szCollectToCustId",
+      "bIsDiffDeliveryAddress",
+      "bIsDiffInvoiceAddress",
+      "bIsMultiLocation",
+      "bAllowLogonToSystem",
+      "szUserId",
+      "szCategory_3Desc",
+      "szCategory_4Desc",
+      "szCategory_7Desc",
+      "szCategory_10Desc",
+      "szCategory_11Desc",
+      "szCategory_12Desc",
+      "szCategory_13Desc",
+      "szCategory_14Desc",
+      "szCategory_15Desc",
+      "bJoinInvoice",
+      "szStatus",
+      "Expr1",
+      "szTaxId",
+      "szInvWorkplaceId",
+      "szCollWorkplaceId",
+      "szSalWorkplaceId",
+      "szDistrChannelId",
+      "szDefaultCcyId",
+      "szStartDoc",
+      "dtmStart",
+      "szContractDoc",
+      "dtmContract",
+      "szRenewalDoc",
+      "dtmRenewal",
+      "szStopDoc",
+      "dtmStop",
+      "szSalesId",
+      "bICP",
+      "dtmLastUpdated",
+      "bAlreadyTransferred",
+      "Expr2",
+      "Expr3",
+      "szLastFCustBIId",
+      "bNeedInvoiceChange",
+      "bInvoiceChangeWithReceipt",
+      "bHasSpecialCollectionDay",
+      "bHasSpecialCollectionDay_Sunday",
+      "bHasSpecialCollectionDay_Monday",
+      "bHasSpecialCollectionDay_Tuesday",
+      "bHasSpecialCollectionDay_Wednesday",
+      "bHasSpecialCollectionDay_Thursday",
+      "bHasSpecialCollectionDay_Friday",
+      "bHasSpecialCollectionDay_Saturday",
+      "bPaymentType_Cash",
+      "bPaymentType_CurrentAccount",
+      "bPaymentType_Transfer",
+      "bRequiredDocuments_PO",
+      "bRequiredDocuments_Receipt",
+      "bRequiredDocuments_StandardTaxInvoice",
+      "bRequiredDocuments_Materai",
+      "bRequiredDocuments_ReceiptNote",
+      "bRequiredDocuments_Other",
+      "szRequiredDocuments_Other",
+      "szGuarantee",
+      "szDeliveryGroupId",
+      "szActivityStatus",
+      "dtmLastChangeActivityStatus",
+      "CustszAddress_1_Dlv",
+      "CustszAddress_2_Dlv",
+      "CustszDistrict_Dlv",
+      "CustszCity_Dlv",
+      "CustszZipCode_Dlv",
+      "CustszState_Dlv",
+      "CustszCountry_Dlv",
+      "bHasChiller",
+      "decTargetAmt",
+      "decMonthlyTarget",
+      "decTargetRemain",
+      "decTargetDAP",
+      "decMonthlyActual",
+      "decTotalSalesPlan",
+      "decPercentage",
+      "bEdited",
+      "decITGTarget",
+      "decITGActual",
+      "szSkuPemajangan",
+      "szBarcodeCust",
+      "szBarcodeCC",
+      "szBarcodeSales",
+      "szBarcodeWor",
+      "szBarcodeDefault",
+      "szFeatureAICust",
+      "szFeatureAICC",
+      "szFeatureAIDefault",
+      "szManualProductAICust",
+      "szManualProductAICC",
+      "szManualProductAIDefault",
+      "szGeofencingCust",
+      "szGeofencingCC",
+      "szGeofencingDefault",
+      "szToggleAICust",
+      "szToggleAICC",
+      "szToggleAIDefault",
+      "decMinimumOrderGTP",
+      "bUpdateCoordinate",
+      "decCreditLimitArClass",
+      "szPaymentTermIdArClass",
+      "bHasChillerTeam",
+      "bDisableBarcode",
+      "decActualPOM",
+      "decActualRecommended",
+      "decActualReguler",
+      "decTargetPOM",
+      "decTargetRecomended",
+      "decTargetReguler",
+      "decActualChiller",
+      "decActualSKU",
+      "decEC",
+      "decECLM",
+      "decET",
+      "decPercPICOSVisibility",
+      "decTargetChiller",
+      "decTargetSKU",
+      "decMSSAchievement"
+    ],
+    "only_in_b": [
+      "szBarcode",
+      "szFeatureAI",
+      "szManualProductAI",
+      "szGeofencing",
+      "szToggleAI"
+    ]
+  },
+  "rows": {
+    "identical": 0,
+    "different": 353,
+    "only_in_a": 0,
+    "only_in_b": 326
+  },
+  "differences": [
+    {
+      "row_index": 0,
+      "key": {
+        "szCustId": "0057-19-000011583"
+      },
+      "columns": {
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        },
+        "szEmployeeId": {
+          "a": "",
+          "b": "00916451"
+        }
+      }
+    },
+    {
+      "row_index": 1,
+      "key": {
+        "szCustId": "0057-24-000013728"
+      },
+      "columns": {
+        "decMinOrderAmount": {
+          "a": "100000",
+          "b": "15001.00"
+        },
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        }
+      }
+    },
+    {
+      "row_index": 2,
+      "key": {
+        "szCustId": "0057-19-000011447"
+      },
+      "columns": {
+        "decMinOrderAmount": {
+          "a": "100000",
+          "b": "15001.00"
+        },
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        },
+        "szEmployeeId": {
+          "a": "",
+          "b": "00916451"
+        }
+      }
+    },
+    {
+      "row_index": 3,
+      "key": {
+        "szCustId": "0057-19-000011592"
+      },
+      "columns": {
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        },
+        "szEmployeeId": {
+          "a": "",
+          "b": "00916451"
+        }
+      }
+    },
+    {
+      "row_index": 4,
+      "key": {
+        "szCustId": "0057-19-000011591"
+      },
+      "columns": {
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        },
+        "szEmployeeId": {
+          "a": "",
+          "b": "00916451"
+        }
+      }
+    },
+    {
+      "row_index": 5,
+      "key": {
+        "szCustId": "0057-19-000011558"
+      },
+      "columns": {
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        },
+        "szEmployeeId": {
+          "a": "",
+          "b": "00916451"
+        }
+      }
+    },
+    {
+      "row_index": 6,
+      "key": {
+        "szCustId": "0057-19-000011719"
+      },
+      "columns": {
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        },
+        "szEmployeeId": {
+          "a": "",
+          "b": "00916451"
+        }
+      }
+    },
+    {
+      "row_index": 7,
+      "key": {
+        "szCustId": "0057-19-000011506"
+      },
+      "columns": {
+        "decMinOrderAmount": {
+          "a": "100000",
+          "b": "15001.00"
+        },
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        },
+        "szEmployeeId": {
+          "a": "",
+          "b": "00916451"
+        }
+      }
+    },
+    {
+      "row_index": 8,
+      "key": {
+        "szCustId": "0057-20-000012194"
+      },
+      "columns": {
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        },
+        "szEmployeeId": {
+          "a": "10032485",
+          "b": "00916451"
+        }
+      }
+    },
+    {
+      "row_index": 9,
+      "key": {
+        "szCustId": "0057-25-000014277"
+      },
+      "columns": {
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        }
+      }
+    },
+    {
+      "row_index": 10,
+      "key": {
+        "szCustId": "0057-25-000014195"
+      },
+      "columns": {
+        "decMinOrderAmount": {
+          "a": "100000",
+          "b": "15001.00"
+        },
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        }
+      }
+    },
+    {
+      "row_index": 11,
+      "key": {
+        "szCustId": "0057-20-000012369"
+      },
+      "columns": {
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        },
+        "szEmployeeId": {
+          "a": "10032485",
+          "b": "00916451"
+        }
+      }
+    },
+    {
+      "row_index": 12,
+      "key": {
+        "szCustId": "0057-22-000013070"
+      },
+      "columns": {
+        "decMinOrderAmount": {
+          "a": "100000",
+          "b": "15001.00"
+        },
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        }
+      }
+    },
+    {
+      "row_index": 13,
+      "key": {
+        "szCustId": "0057-20-000012491"
+      },
+      "columns": {
+        "decMinOrderAmount": {
+          "a": "100000",
+          "b": "15001.00"
+        },
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        }
+      }
+    },
+    {
+      "row_index": 14,
+      "key": {
+        "szCustId": "0057-22-000012900"
+      },
+      "columns": {
+        "decMinOrderAmount": {
+          "a": "100000",
+          "b": "15001.00"
+        },
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        }
+      }
+    },
+    {
+      "row_index": 15,
+      "key": {
+        "szCustId": "0057-22-000013200"
+      },
+      "columns": {
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        }
+      }
+    },
+    {
+      "row_index": 16,
+      "key": {
+        "szCustId": "0057-19-000011718"
+      },
+      "columns": {
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        },
+        "szEmployeeId": {
+          "a": "",
+          "b": "00916451"
+        }
+      }
+    },
+    {
+      "row_index": 17,
+      "key": {
+        "szCustId": "0057-19-000011652"
+      },
+      "columns": {
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        },
+        "szEmployeeId": {
+          "a": "",
+          "b": "00916451"
+        }
+      }
+    },
+    {
+      "row_index": 18,
+      "key": {
+        "szCustId": "0057-20-000012508"
+      },
+      "columns": {
+        "decMinOrderAmount": {
+          "a": "100000",
+          "b": "15001.00"
+        },
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        }
+      }
+    },
+    {
+      "row_index": 19,
+      "key": {
+        "szCustId": "0057-21-000012738"
+      },
+      "columns": {
+        "decMinOrderAmount": {
+          "a": "100000",
+          "b": "15001.00"
+        },
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        }
+      }
+    },
+    {
+      "row_index": 20,
+      "key": {
+        "szCustId": "0057-19-000011577"
+      },
+      "columns": {
+        "decMinOrderAmount": {
+          "a": "100000",
+          "b": "15001.00"
+        },
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        },
+        "szEmployeeId": {
+          "a": "",
+          "b": "00916451"
+        }
+      }
+    },
+    {
+      "row_index": 21,
+      "key": {
+        "szCustId": "0057-19-000011720"
+      },
+      "columns": {
+        "decMinOrderAmount": {
+          "a": "100000",
+          "b": "15001.00"
+        },
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        },
+        "szEmployeeId": {
+          "a": "",
+          "b": "00916451"
+        }
+      }
+    },
+    {
+      "row_index": 22,
+      "key": {
+        "szCustId": "0057-24-000013891"
+      },
+      "columns": {
+        "decMinOrderAmount": {
+          "a": "100000",
+          "b": "15001.00"
+        },
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        }
+      }
+    },
+    {
+      "row_index": 23,
+      "key": {
+        "szCustId": "0057-26-000013714"
+      },
+      "columns": {
+        "decMinOrderAmount": {
+          "a": "100000",
+          "b": "15001.00"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        }
+      }
+    },
+    {
+      "row_index": 24,
+      "key": {
+        "szCustId": "0057-19-000011500"
+      },
+      "columns": {
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        },
+        "szEmployeeId": {
+          "a": "",
+          "b": "00916451"
+        }
+      }
+    },
+    {
+      "row_index": 25,
+      "key": {
+        "szCustId": "0057-22-000013201"
+      },
+      "columns": {
+        "decMinOrderAmount": {
+          "a": "100000",
+          "b": "15001.00"
+        },
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        }
+      }
+    },
+    {
+      "row_index": 26,
+      "key": {
+        "szCustId": "0057-19-000011590"
+      },
+      "columns": {
+        "decMinOrderAmount": {
+          "a": "100000",
+          "b": "15001.00"
+        },
+        "shOrderMissionMinOrder": {
+          "a": 2,
+          "b": "1"
+        },
+        "szActivityStatusOrder": {
+          "a": "NAC",
+          "b": "NEW"
+        },
+        "szCustomerType": {
+          "a": "",
+          "b": "bosnet"
+        },
+        "szEmployeeId": {
+          "a": "",
+          "b": "00916451"
+        }
+      }
+    },
+    {
+      "row_index": 27,
+      "key": {
+        "szCustId": "0057-19-000010725"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 28,
+      "key": {
+        "szCustId": "0057-23-000013278"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 29,
+      "key": {
+        "szCustId": "0057-23-000013660"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 30,
+      "key": {
+        "szCustId": "0057-22-000013209"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 31,
+      "key": {
+        "szCustId": "0057-07-000004057"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 32,
+      "key": {
+        "szCustId": "0057-24-000013752"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 33,
+      "key": {
+        "szCustId": "0057-25-000014194"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 34,
+      "key": {
+        "szCustId": "0057-22-000012967"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 35,
+      "key": {
+        "szCustId": "0057-17-000009160"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 36,
+      "key": {
+        "szCustId": "0057-25-000014090"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 37,
+      "key": {
+        "szCustId": "0057-22-000013085"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 38,
+      "key": {
+        "szCustId": "0057-16-000008431"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 39,
+      "key": {
+        "szCustId": "0057-19-000011980"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 40,
+      "key": {
+        "szCustId": "0057-20-000012032"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 41,
+      "key": {
+        "szCustId": "0057-20-000012548"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 42,
+      "key": {
+        "szCustId": "0057-18-000010336"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 43,
+      "key": {
+        "szCustId": "0057-18-000010392"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 44,
+      "key": {
+        "szCustId": "0057-20-000012482"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 45,
+      "key": {
+        "szCustId": "0057-07-000004123"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 46,
+      "key": {
+        "szCustId": "0057-07-000003387"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 47,
+      "key": {
+        "szCustId": "0057-23-000013357"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 48,
+      "key": {
+        "szCustId": "0057-20-000012357"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 49,
+      "key": {
+        "szCustId": "0057-26-000013747"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 50,
+      "key": {
+        "szCustId": "0057-24-000013746"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 51,
+      "key": {
+        "szCustId": "0057-22-000013072"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 52,
+      "key": {
+        "szCustId": "0057-25-000014332"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 53,
+      "key": {
+        "szCustId": "0057-10-000005965"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 54,
+      "key": {
+        "szCustId": "0057-18-000010278"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 55,
+      "key": {
+        "szCustId": "0057-23-000013632"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 56,
+      "key": {
+        "szCustId": "0057-24-000014014"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 57,
+      "key": {
+        "szCustId": "0227-14-000000003"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 58,
+      "key": {
+        "szCustId": "0057-07-000004044"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 59,
+      "key": {
+        "szCustId": "0057-18-000010382"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 60,
+      "key": {
+        "szCustId": "0057-22-000013028"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 61,
+      "key": {
+        "szCustId": "0057-16-000008508"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 62,
+      "key": {
+        "szCustId": "0057-24-000013745"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 63,
+      "key": {
+        "szCustId": "0057-26-000013776"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 64,
+      "key": {
+        "szCustId": "0057-24-000013845"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 65,
+      "key": {
+        "szCustId": "0057-16-000008511"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 66,
+      "key": {
+        "szCustId": "0057-23-000013580"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 67,
+      "key": {
+        "szCustId": "0057-18-000010305"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 68,
+      "key": {
+        "szCustId": "0057-25-000014244"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 69,
+      "key": {
+        "szCustId": "0057-26-000013654"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 70,
+      "key": {
+        "szCustId": "0057-07-000004164"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 71,
+      "key": {
+        "szCustId": "0057-23-000013567"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 72,
+      "key": {
+        "szCustId": "0227-16-000000041"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 73,
+      "key": {
+        "szCustId": "0057-23-000013511"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 74,
+      "key": {
+        "szCustId": "0057-24-000013761"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 75,
+      "key": {
+        "szCustId": "0057-07-000004260"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 76,
+      "key": {
+        "szCustId": "0057-07-000003034"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 77,
+      "key": {
+        "szCustId": "0057-22-000012901"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 78,
+      "key": {
+        "szCustId": "0057-26-000013729"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 79,
+      "key": {
+        "szCustId": "0057-16-000008471"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 80,
+      "key": {
+        "szCustId": "0057-24-000013735"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 81,
+      "key": {
+        "szCustId": "0057-25-000014124"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 82,
+      "key": {
+        "szCustId": "0057-07-000000029"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 83,
+      "key": {
+        "szCustId": "0057-07-000004247"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 84,
+      "key": {
+        "szCustId": "0057-16-000008668"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 85,
+      "key": {
+        "szCustId": "0057-17-000009236"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 86,
+      "key": {
+        "szCustId": "0057-18-000010422"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 87,
+      "key": {
+        "szCustId": "0057-07-000004224"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 88,
+      "key": {
+        "szCustId": "0057-18-000010163"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 89,
+      "key": {
+        "szCustId": "0057-16-000008647"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 90,
+      "key": {
+        "szCustId": "0057-25-000014361"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 91,
+      "key": {
+        "szCustId": "0057-23-000013614"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 92,
+      "key": {
+        "szCustId": "0057-24-000013918"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 93,
+      "key": {
+        "szCustId": "0057-17-000009218"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 94,
+      "key": {
+        "szCustId": "0057-22-000013084"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 95,
+      "key": {
+        "szCustId": "0057-26-000013786"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 96,
+      "key": {
+        "szCustId": "0057-17-000009163"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 97,
+      "key": {
+        "szCustId": "0057-16-000008366"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 98,
+      "key": {
+        "szCustId": "0057-24-000013853"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 99,
+      "key": {
+        "szCustId": "0057-21-000012671"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 100,
+      "key": {
+        "szCustId": "0057-26-000013792"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 101,
+      "key": {
+        "szCustId": "0057-22-000013126"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 102,
+      "key": {
+        "szCustId": "0057-26-000013745"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 103,
+      "key": {
+        "szCustId": "0057-21-000012831"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 104,
+      "key": {
+        "szCustId": "0057-24-000013804"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 105,
+      "key": {
+        "szCustId": "0057-25-000014094"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 106,
+      "key": {
+        "szCustId": "0057-10-000005734"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 107,
+      "key": {
+        "szCustId": "0057-26-000013722"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 108,
+      "key": {
+        "szCustId": "0057-19-000011812"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 109,
+      "key": {
+        "szCustId": "0057-19-000011804"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 110,
+      "key": {
+        "szCustId": "0057-20-000012337"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 111,
+      "key": {
+        "szCustId": "0057-20-000012416"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 112,
+      "key": {
+        "szCustId": "0057-26-000013816"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 113,
+      "key": {
+        "szCustId": "0057-16-000008639"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 114,
+      "key": {
+        "szCustId": "0057-07-000004208"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 115,
+      "key": {
+        "szCustId": "0057-18-000010462"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 116,
+      "key": {
+        "szCustId": "0057-19-000011643"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 117,
+      "key": {
+        "szCustId": "0057-26-000014452"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 118,
+      "key": {
+        "szCustId": "0057-25-000014165"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 119,
+      "key": {
+        "szCustId": "0057-19-000010741"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 120,
+      "key": {
+        "szCustId": "0057-16-000008208"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 121,
+      "key": {
+        "szCustId": "0057-22-000012882"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 122,
+      "key": {
+        "szCustId": "0057-22-000013190"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 123,
+      "key": {
+        "szCustId": "0057-22-000012866"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 124,
+      "key": {
+        "szCustId": "0057-25-000014246"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 125,
+      "key": {
+        "szCustId": "0057-10-000005722"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 126,
+      "key": {
+        "szCustId": "0057-16-000008662"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 127,
+      "key": {
+        "szCustId": "0057-25-000014303"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 128,
+      "key": {
+        "szCustId": "0057-20-000012190"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 129,
+      "key": {
+        "szCustId": "0057-18-000010078"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 130,
+      "key": {
+        "szCustId": "0057-24-000013990"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 131,
+      "key": {
+        "szCustId": "0057-20-000012144"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 132,
+      "key": {
+        "szCustId": "0057-23-000013590"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 133,
+      "key": {
+        "szCustId": "0057-12-000006372"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 134,
+      "key": {
+        "szCustId": "0057-17-000009134"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 135,
+      "key": {
+        "szCustId": "8066-12-000000171"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 136,
+      "key": {
+        "szCustId": "8066-12-000000175"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 137,
+      "key": {
+        "szCustId": "0057-20-000012390"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 138,
+      "key": {
+        "szCustId": "0057-24-000013799"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 139,
+      "key": {
+        "szCustId": "0057-23-000013392"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 140,
+      "key": {
+        "szCustId": "0057-26-000014429"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 141,
+      "key": {
+        "szCustId": "0057-07-000003381"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 142,
+      "key": {
+        "szCustId": "0057-17-000008713"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 143,
+      "key": {
+        "szCustId": "0057-25-000014109"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 144,
+      "key": {
+        "szCustId": "0057-22-000013202"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 145,
+      "key": {
+        "szCustId": "0057-23-000013569"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 146,
+      "key": {
+        "szCustId": "0057-16-000008263"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 147,
+      "key": {
+        "szCustId": "0057-14-000006986"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 148,
+      "key": {
+        "szCustId": "0057-07-000000737"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 149,
+      "key": {
+        "szCustId": "0057-17-000008934"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 150,
+      "key": {
+        "szCustId": "0057-22-000013130"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 151,
+      "key": {
+        "szCustId": "0057-24-000013838"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 152,
+      "key": {
+        "szCustId": "0057-22-000013011"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 153,
+      "key": {
+        "szCustId": "0057-21-000012714"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 154,
+      "key": {
+        "szCustId": "0227-15-000000012"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 155,
+      "key": {
+        "szCustId": "0057-26-000013748"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 156,
+      "key": {
+        "szCustId": "0057-17-000009316"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 157,
+      "key": {
+        "szCustId": "0057-24-000013819"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 158,
+      "key": {
+        "szCustId": "0057-26-000013779"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 159,
+      "key": {
+        "szCustId": "0057-16-000008648"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 160,
+      "key": {
+        "szCustId": "0057-07-000004142"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 161,
+      "key": {
+        "szCustId": "0057-07-000004214"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 162,
+      "key": {
+        "szCustId": "0057-07-000000044"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 163,
+      "key": {
+        "szCustId": "0057-18-000009652"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 164,
+      "key": {
+        "szCustId": "0057-24-000014028"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 165,
+      "key": {
+        "szCustId": "0057-14-000007143"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 166,
+      "key": {
+        "szCustId": "0057-07-000004216"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 167,
+      "key": {
+        "szCustId": "0057-23-000013568"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 168,
+      "key": {
+        "szCustId": "0057-25-000014333"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 169,
+      "key": {
+        "szCustId": "0057-16-000008278"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 170,
+      "key": {
+        "szCustId": "0057-22-000013096"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 171,
+      "key": {
+        "szCustId": "0057-20-000012376"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 172,
+      "key": {
+        "szCustId": "0057-19-000011680"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 173,
+      "key": {
+        "szCustId": "0057-24-000013718"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 174,
+      "key": {
+        "szCustId": "0057-16-000008275"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 175,
+      "key": {
+        "szCustId": "0057-18-000010151"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 176,
+      "key": {
+        "szCustId": "0057-20-000012399"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 177,
+      "key": {
+        "szCustId": "0057-15-000008143"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 178,
+      "key": {
+        "szCustId": "0057-16-000008531"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 179,
+      "key": {
+        "szCustId": "0057-24-000013977"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 180,
+      "key": {
+        "szCustId": "0057-20-000012459"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 181,
+      "key": {
+        "szCustId": "0057-10-000005626"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 182,
+      "key": {
+        "szCustId": "0057-17-000009065"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 183,
+      "key": {
+        "szCustId": "0057-26-000013777"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 184,
+      "key": {
+        "szCustId": "0057-25-000014245"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 185,
+      "key": {
+        "szCustId": "0057-20-000012619"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 186,
+      "key": {
+        "szCustId": "0057-07-000004223"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 187,
+      "key": {
+        "szCustId": "0057-23-000013577"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 188,
+      "key": {
+        "szCustId": "0057-13-000006663"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 189,
+      "key": {
+        "szCustId": "0057-22-000013091"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 190,
+      "key": {
+        "szCustId": "0057-19-000010797"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 191,
+      "key": {
+        "szCustId": "0057-19-000010892"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 192,
+      "key": {
+        "szCustId": "0057-24-000013775"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 193,
+      "key": {
+        "szCustId": "0057-24-000013932"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 194,
+      "key": {
+        "szCustId": "0057-23-000013285"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 195,
+      "key": {
+        "szCustId": "0057-17-000009225"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 196,
+      "key": {
+        "szCustId": "0057-18-000010194"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 197,
+      "key": {
+        "szCustId": "0057-17-000009220"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 198,
+      "key": {
+        "szCustId": "0057-20-000012541"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 199,
+      "key": {
+        "szCustId": "0057-26-000013663"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 200,
+      "key": {
+        "szCustId": "0057-23-000013570"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 201,
+      "key": {
+        "szCustId": "0057-23-000013322"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 202,
+      "key": {
+        "szCustId": "0057-22-000013117"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 203,
+      "key": {
+        "szCustId": "0057-18-000010266"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 204,
+      "key": {
+        "szCustId": "0057-07-000003635"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 205,
+      "key": {
+        "szCustId": "0057-17-000009092"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 206,
+      "key": {
+        "szCustId": "0057-22-000013024"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 207,
+      "key": {
+        "szCustId": "0057-24-000013798"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 208,
+      "key": {
+        "szCustId": "0057-23-000013601"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 209,
+      "key": {
+        "szCustId": "0057-12-000006565"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 210,
+      "key": {
+        "szCustId": "0057-07-000004200"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 211,
+      "key": {
+        "szCustId": "0057-17-000009144"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 212,
+      "key": {
+        "szCustId": "0057-24-000013929"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 213,
+      "key": {
+        "szCustId": "0057-21-000012659"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 214,
+      "key": {
+        "szCustId": "0057-25-000014219"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 215,
+      "key": {
+        "szCustId": "0057-22-000012875"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 216,
+      "key": {
+        "szCustId": "0057-10-000005861"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 217,
+      "key": {
+        "szCustId": "0057-12-000006594"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 218,
+      "key": {
+        "szCustId": "0057-18-000010346"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 219,
+      "key": {
+        "szCustId": "0057-07-000004157"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 220,
+      "key": {
+        "szCustId": "0057-23-000013581"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 221,
+      "key": {
+        "szCustId": "0057-25-000014181"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 222,
+      "key": {
+        "szCustId": "0057-22-000012999"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 223,
+      "key": {
+        "szCustId": "0057-26-000013815"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 224,
+      "key": {
+        "szCustId": "0057-07-000003305"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 225,
+      "key": {
+        "szCustId": "0057-25-000014123"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 226,
+      "key": {
+        "szCustId": "0057-18-000010461"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 227,
+      "key": {
+        "szCustId": "0057-22-000013192"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 228,
+      "key": {
+        "szCustId": "0057-24-000013934"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 229,
+      "key": {
+        "szCustId": "0057-16-000008675"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 230,
+      "key": {
+        "szCustId": "0057-26-000013775"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 231,
+      "key": {
+        "szCustId": "0057-22-000013195"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 232,
+      "key": {
+        "szCustId": "0057-25-000014403"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 233,
+      "key": {
+        "szCustId": "0057-25-000014404"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 234,
+      "key": {
+        "szCustId": "0057-07-000000088"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 235,
+      "key": {
+        "szCustId": "0057-10-000006075"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 236,
+      "key": {
+        "szCustId": "0057-13-000006714"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 237,
+      "key": {
+        "szCustId": "0057-16-000008513"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 238,
+      "key": {
+        "szCustId": "8066-12-000000169"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 239,
+      "key": {
+        "szCustId": "0057-24-000013724"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 240,
+      "key": {
+        "szCustId": "0057-23-000013508"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 241,
+      "key": {
+        "szCustId": "0057-13-000006637"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 242,
+      "key": {
+        "szCustId": "0057-19-000010542"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 243,
+      "key": {
+        "szCustId": "0057-26-000014414"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 244,
+      "key": {
+        "szCustId": "0057-07-000000040"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 245,
+      "key": {
+        "szCustId": "0057-18-000009912"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 246,
+      "key": {
+        "szCustId": "0057-24-000014006"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 247,
+      "key": {
+        "szCustId": "0057-08-000004656"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 248,
+      "key": {
+        "szCustId": "0057-17-000009120"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 249,
+      "key": {
+        "szCustId": "0057-22-000013189"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 250,
+      "key": {
+        "szCustId": "0057-20-000012065"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 251,
+      "key": {
+        "szCustId": "0057-18-000009791"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 252,
+      "key": {
+        "szCustId": "0057-19-000011982"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 253,
+      "key": {
+        "szCustId": "0057-15-000007658"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 254,
+      "key": {
+        "szCustId": "0057-18-000010469"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 255,
+      "key": {
+        "szCustId": "0057-19-000010749"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 256,
+      "key": {
+        "szCustId": "0057-07-000004152"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 257,
+      "key": {
+        "szCustId": "0057-20-000012077"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 258,
+      "key": {
+        "szCustId": "0057-17-000009246"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 259,
+      "key": {
+        "szCustId": "0057-24-000013765"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 260,
+      "key": {
+        "szCustId": "0057-23-000013602"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 261,
+      "key": {
+        "szCustId": "0057-24-000013976"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 262,
+      "key": {
+        "szCustId": "0057-26-000013701"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 263,
+      "key": {
+        "szCustId": "0057-14-000007141"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 264,
+      "key": {
+        "szCustId": "0057-25-000014283"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 265,
+      "key": {
+        "szCustId": "0057-26-000014415"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 266,
+      "key": {
+        "szCustId": "0057-12-000006566"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 267,
+      "key": {
+        "szCustId": "0057-23-000013296"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 268,
+      "key": {
+        "szCustId": "8066-12-000000173"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 269,
+      "key": {
+        "szCustId": "0057-24-000013717"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 270,
+      "key": {
+        "szCustId": "0057-21-000012637"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 271,
+      "key": {
+        "szCustId": "0057-19-000010714"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 272,
+      "key": {
+        "szCustId": "0057-18-000010144"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 273,
+      "key": {
+        "szCustId": "8066-12-000000122"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 274,
+      "key": {
+        "szCustId": "0057-16-000008463"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 275,
+      "key": {
+        "szCustId": "0057-15-000007673"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 276,
+      "key": {
+        "szCustId": "0057-07-000000100"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 277,
+      "key": {
+        "szCustId": "0057-22-000013191"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 278,
+      "key": {
+        "szCustId": "0057-07-000001585"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 279,
+      "key": {
+        "szCustId": "0057-17-000009234"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 280,
+      "key": {
+        "szCustId": "0057-21-000012670"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 281,
+      "key": {
+        "szCustId": "0057-08-000004634"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 282,
+      "key": {
+        "szCustId": "0057-25-000014228"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 283,
+      "key": {
+        "szCustId": "0057-23-000013631"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 284,
+      "key": {
+        "szCustId": "0057-24-000014076"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 285,
+      "key": {
+        "szCustId": "0057-15-000008060"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 286,
+      "key": {
+        "szCustId": "0057-24-000013682"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 287,
+      "key": {
+        "szCustId": "0057-25-000014312"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 288,
+      "key": {
+        "szCustId": "0057-18-000010225"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 289,
+      "key": {
+        "szCustId": "0057-23-000013578"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 290,
+      "key": {
+        "szCustId": "0057-16-000008364"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 291,
+      "key": {
+        "szCustId": "0057-23-000013637"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 292,
+      "key": {
+        "szCustId": "0057-21-000012646"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 293,
+      "key": {
+        "szCustId": "0057-07-000004287"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 294,
+      "key": {
+        "szCustId": "0057-24-000013674"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 295,
+      "key": {
+        "szCustId": "0057-23-000013346"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 296,
+      "key": {
+        "szCustId": "0057-20-000012034"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 297,
+      "key": {
+        "szCustId": "0057-18-000010059"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 298,
+      "key": {
+        "szCustId": "0057-26-000013805"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 299,
+      "key": {
+        "szCustId": "0057-22-000013066"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 300,
+      "key": {
+        "szCustId": "0057-26-000013680"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 301,
+      "key": {
+        "szCustId": "0057-17-000009263"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 302,
+      "key": {
+        "szCustId": "0057-19-000010894"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 303,
+      "key": {
+        "szCustId": "0057-24-000013991"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 304,
+      "key": {
+        "szCustId": "0057-23-000013626"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 305,
+      "key": {
+        "szCustId": "0057-18-000009932"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 306,
+      "key": {
+        "szCustId": "0057-16-000008408"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 307,
+      "key": {
+        "szCustId": "0057-23-000013280"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 308,
+      "key": {
+        "szCustId": "0057-24-000013762"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 309,
+      "key": {
+        "szCustId": "0057-24-000013727"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 310,
+      "key": {
+        "szCustId": "0057-16-000008207"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 311,
+      "key": {
+        "szCustId": "0057-21-000012658"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 312,
+      "key": {
+        "szCustId": "0057-25-000014120"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 313,
+      "key": {
+        "szCustId": "0057-10-000005986"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 314,
+      "key": {
+        "szCustId": "0057-18-000010018"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 315,
+      "key": {
+        "szCustId": "0057-07-000002143"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 316,
+      "key": {
+        "szCustId": "0057-22-000013115"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 317,
+      "key": {
+        "szCustId": "0057-22-000013149"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 318,
+      "key": {
+        "szCustId": "0057-23-000013593"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 319,
+      "key": {
+        "szCustId": "0057-22-000013198"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 320,
+      "key": {
+        "szCustId": "0057-19-000010549"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 321,
+      "key": {
+        "szCustId": "0057-20-000012382"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 322,
+      "key": {
+        "szCustId": "0057-26-000013814"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 323,
+      "key": {
+        "szCustId": "0057-16-000008430"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 324,
+      "key": {
+        "szCustId": "0057-22-000013111"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 325,
+      "key": {
+        "szCustId": "0057-22-000013036"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 326,
+      "key": {
+        "szCustId": "0057-24-000013958"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 327,
+      "key": {
+        "szCustId": "0057-07-000004119"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 328,
+      "key": {
+        "szCustId": "0057-16-000008554"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 329,
+      "key": {
+        "szCustId": "0057-25-000014383"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 330,
+      "key": {
+        "szCustId": "0057-14-000007157"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 331,
+      "key": {
+        "szCustId": "0057-15-000007899"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 332,
+      "key": {
+        "szCustId": "0057-19-000010722"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 333,
+      "key": {
+        "szCustId": "0057-18-000009790"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 334,
+      "key": {
+        "szCustId": "0057-18-000010051"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 335,
+      "key": {
+        "szCustId": "0057-17-000008912"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 336,
+      "key": {
+        "szCustId": "0057-16-000008510"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 337,
+      "key": {
+        "szCustId": "8066-12-000000174"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 338,
+      "key": {
+        "szCustId": "0057-25-000014267"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 339,
+      "key": {
+        "szCustId": "0057-07-000004329"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 340,
+      "key": {
+        "szCustId": "0057-19-000011663"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 341,
+      "key": {
+        "szCustId": "0057-26-000014441"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 342,
+      "key": {
+        "szCustId": "0057-14-000007480"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 343,
+      "key": {
+        "szCustId": "0057-17-000008839"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 344,
+      "key": {
+        "szCustId": "0057-15-000007736"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 345,
+      "key": {
+        "szCustId": "0057-17-000009112"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 346,
+      "key": {
+        "szCustId": "0057-17-000009035"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 347,
+      "key": {
+        "szCustId": "0057-24-000013776"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 348,
+      "key": {
+        "szCustId": "0057-17-000008919"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 349,
+      "key": {
+        "szCustId": "0057-25-000014296"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 350,
+      "key": {
+        "szCustId": "0057-26-000014449"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 351,
+      "key": {
+        "szCustId": "0057-15-000008042"
+      },
+      "columns": {}
+    },
+    {
+      "row_index": 352,
+      "key": {
+        "szCustId": "0057-25-000014304"
+      },
+      "columns": {}
+    }
+  ],
+  "files": {
+    "csv_a": "C:\\Users\\Leonovo\\Documents\\Bentang Project\\mcp-mssql-server\\exportDatabaseSql\\SP_0057_060148_20260707_092842.csv",
+    "csv_b": "C:\\Users\\Leonovo\\Documents\\Bentang Project\\mcp-mssql-server\\exportDatabaseSql\\Query_0057_20260707_092842.csv"
+  }
+}
