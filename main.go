@@ -69,8 +69,9 @@ Available tools:
   execution time + row count without returning the actual data. Useful for
   comparing old vs new versions of a query or SP refactoring.
 
-SSIS ETL tools (no DB connection needed — parses .dtsx files from configured path):
+SSIS ETL tools (no DB connection needed — parses .dtsx files from configured path and supplied local .ispac archives):
 - ssis_list_packages: List all .dtsx SSIS packages in the configured path
+- ssis_breakdown_ispac: Break down a local .ispac archive into package/control/data-flow metadata
 - ssis_control_flow: Extract task sequence and SQL from a single package
 - ssis_data_flow: Extract components, table names, SQL queries, column mappings
 - ssis_impact_check: Scan ALL packages for table/column — use before schema changes

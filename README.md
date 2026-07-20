@@ -48,11 +48,12 @@ All database tools accept an optional `connection` parameter to target a specifi
 
 ### SSIS Tools (File-based)
 
-Parse `.dtsx` files from the configured `project_ssis_path`.
+Parse `.dtsx` files from the configured `project_ssis_path`, or break down a supplied local `.ispac` archive.
 
 | Tool | Description | Parameters |
 |------|-------------|------------|
 | `ssis_list_packages` | List all `.dtsx` packages in the configured path. | none |
+| `ssis_breakdown_ispac` | Break down a local `.ispac` archive into packages, control flow, data flow, table refs, connection managers, and project parameters. Sensitive values are masked. | `ispac_path` (required) |
 | `ssis_control_flow` | Extract task sequence, types, and embedded SQL from a package. | `package_name` (required) |
 | `ssis_data_flow` | Extract data flow components, table names, SQL queries, column mappings. | `package_name` (required) |
 | `ssis_impact_check` | Scan ALL packages for references to a table or column. Use before schema changes. | `table_name` (required), `column_name` |

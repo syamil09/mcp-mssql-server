@@ -1,14 +1,17 @@
 package main
 
 import (
+	"archive/zip"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"encoding/xml"
-	"strconv"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/mark3labs/mcp-go/mcp"
@@ -110,6 +113,46 @@ type SQLTask struct {
 	SqlStatement string `xml:"SqlStatementSource,attr"`
 }
 
+type SSISProjectManifest struct {
+	ProtectionLevel string         `xml:"ProtectionLevel,attr"`
+	Properties      []SSISProperty `xml:"Properties>Property"`
+}
+
+type SSISParameters struct {
+	Parameters []SSISParameter `xml:"Parameter"`
+}
+
+type SSISParameter struct {
+	Name       string         `xml:"Name,attr"`
+	Properties []SSISProperty `xml:"Properties>Property"`
+}
+
+type SSISProperty struct {
+	Name      string `xml:"Name,attr"`
+	Sensitive string `xml:"Sensitive,attr"`
+	Value     string `xml:",chardata"`
+}
+
+type DTSConnectionManagerFile struct {
+	ObjectName          string                   `xml:"ObjectName,attr"`
+	CreationName        string                   `xml:"CreationName,attr"`
+	PropertyExpressions []DTSPropertyExpression  `xml:"PropertyExpression"`
+	ObjectData          *DTSConnectionObjectData `xml:"ObjectData"`
+}
+
+type DTSPropertyExpression struct {
+	Name  string `xml:"Name,attr"`
+	Value string `xml:",chardata"`
+}
+
+type DTSConnectionObjectData struct {
+	ConnectionManager DTSConnectionManagerInner `xml:"ConnectionManager"`
+}
+
+type DTSConnectionManagerInner struct {
+	ConnectionString string `xml:"ConnectionString,attr"`
+}
+
 // ── Output structs (clean JSON returned to MCP caller) ────────────────────────
 
 type PackageSummary struct {
@@ -179,6 +222,53 @@ type ValidationIssue struct {
 	Message   string `json:"message"`
 }
 
+const (
+	maskedValue        = "***MASKED***"
+	maxISPACEntries    = 1000
+	maxISPACEntryBytes = int64(50 * 1024 * 1024)
+	maxISPACTotalBytes = uint64(200 * 1024 * 1024)
+)
+
+type ISPACBreakdownResult struct {
+	ProjectName         string                       `json:"project_name"`
+	FilePath            string                       `json:"file_path"`
+	ProtectionLevel     string                       `json:"protection_level,omitempty"`
+	TargetServerVersion string                       `json:"target_server_version,omitempty"`
+	PackageCount        int                          `json:"package_count"`
+	Packages            []ISPACPackageBreakdown      `json:"packages"`
+	ConnectionManagers  []ISPACConnectionManagerInfo `json:"connection_managers,omitempty"`
+	Parameters          []ISPACParameterInfo         `json:"parameters,omitempty"`
+}
+
+type ISPACPackageBreakdown struct {
+	Package     string           `json:"package"`
+	FileName    string           `json:"file_name"`
+	ControlFlow []TaskInfo       `json:"control_flow"`
+	DataFlows   []DataFlowDetail `json:"data_flows"`
+	Tables      []TableRef       `json:"tables,omitempty"`
+}
+
+type TableRef struct {
+	Table string `json:"table"`
+	Usage string `json:"usage"`
+}
+
+type ISPACConnectionManagerInfo struct {
+	Name                string            `json:"name"`
+	FileName            string            `json:"file_name"`
+	CreationName        string            `json:"creation_name,omitempty"`
+	ConnectionString    string            `json:"connection_string,omitempty"`
+	PropertyExpressions map[string]string `json:"property_expressions,omitempty"`
+}
+
+type ISPACParameterInfo struct {
+	Name      string `json:"name"`
+	DataType  string `json:"data_type,omitempty"`
+	Required  string `json:"required,omitempty"`
+	Sensitive string `json:"sensitive,omitempty"`
+	Value     string `json:"value,omitempty"`
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 func parseDTSX(filePath string) (*DTSPackage, error) {
@@ -186,11 +276,254 @@ func parseDTSX(filePath string) (*DTSPackage, error) {
 	if err != nil {
 		return nil, fmt.Errorf("read error: %w", err)
 	}
+	return parseDTSXBytes(data)
+}
+
+func parseDTSXBytes(data []byte) (*DTSPackage, error) {
 	var pkg DTSPackage
 	if err := xml.Unmarshal(data, &pkg); err != nil {
 		return nil, fmt.Errorf("xml parse error: %w", err)
 	}
 	return &pkg, nil
+}
+
+func buildISPACBreakdown(ispacPath string) (*ISPACBreakdownResult, error) {
+	if strings.TrimSpace(ispacPath) == "" {
+		return nil, fmt.Errorf("ispac_path is required")
+	}
+	if !strings.EqualFold(filepath.Ext(ispacPath), ".ispac") {
+		return nil, fmt.Errorf("ispac_path must point to a .ispac file")
+	}
+
+	archive, err := zip.OpenReader(ispacPath)
+	if err != nil {
+		return nil, fmt.Errorf("open ispac: %w", err)
+	}
+	defer archive.Close()
+	if len(archive.File) > maxISPACEntries {
+		return nil, fmt.Errorf("ispac has too many entries: %d > %d", len(archive.File), maxISPACEntries)
+	}
+
+	result := &ISPACBreakdownResult{FilePath: ispacPath}
+	var totalUncompressed uint64
+	for _, entry := range archive.File {
+		if entry.FileInfo().IsDir() {
+			continue
+		}
+		if entry.UncompressedSize64 > uint64(maxISPACEntryBytes) {
+			return nil, fmt.Errorf("entry %s is too large: %d bytes", entry.Name, entry.UncompressedSize64)
+		}
+		totalUncompressed += entry.UncompressedSize64
+		if totalUncompressed > maxISPACTotalBytes {
+			return nil, fmt.Errorf("ispac uncompressed size exceeds limit: %d bytes", totalUncompressed)
+		}
+		data, err := readZipEntry(entry)
+		if err != nil {
+			return nil, fmt.Errorf("read %s: %w", entry.Name, err)
+		}
+		lowerName := strings.ToLower(entry.Name)
+		switch {
+		case strings.HasSuffix(lowerName, ".dtsx"):
+			pkg, err := parseDTSXBytes(data)
+			if err != nil {
+				return nil, fmt.Errorf("parse %s: %w", entry.Name, err)
+			}
+			result.Packages = append(result.Packages, buildISPACPackageBreakdown(entry.Name, pkg))
+		case strings.HasSuffix(lowerName, ".conmgr"):
+			manager, err := parseISPACConnectionManager(entry.Name, data)
+			if err != nil {
+				return nil, fmt.Errorf("parse %s: %w", entry.Name, err)
+			}
+			result.ConnectionManagers = append(result.ConnectionManagers, manager)
+		case strings.EqualFold(entry.Name, "Project.params"):
+			params, err := parseISPACParameters(data)
+			if err != nil {
+				return nil, fmt.Errorf("parse %s: %w", entry.Name, err)
+			}
+			result.Parameters = params
+		case strings.EqualFold(entry.Name, "@Project.manifest"):
+			if err := applyISPACManifest(result, data); err != nil {
+				return nil, fmt.Errorf("parse %s: %w", entry.Name, err)
+			}
+		}
+	}
+
+	sort.Slice(result.Packages, func(i, j int) bool {
+		return result.Packages[i].FileName < result.Packages[j].FileName
+	})
+	sort.Slice(result.ConnectionManagers, func(i, j int) bool {
+		return result.ConnectionManagers[i].FileName < result.ConnectionManagers[j].FileName
+	})
+	sort.Slice(result.Parameters, func(i, j int) bool {
+		return result.Parameters[i].Name < result.Parameters[j].Name
+	})
+	result.PackageCount = len(result.Packages)
+	return result, nil
+}
+
+func readZipEntry(entry *zip.File) ([]byte, error) {
+	reader, err := entry.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer reader.Close()
+	data, err := io.ReadAll(io.LimitReader(reader, maxISPACEntryBytes+1))
+	if err != nil {
+		return nil, err
+	}
+	if int64(len(data)) > maxISPACEntryBytes {
+		return nil, fmt.Errorf("entry exceeds %d bytes", maxISPACEntryBytes)
+	}
+	return data, nil
+}
+
+func buildISPACPackageBreakdown(fileName string, pkg *DTSPackage) ISPACPackageBreakdown {
+	breakdown := ISPACPackageBreakdown{
+		Package:     pkg.ObjectName,
+		FileName:    fileName,
+		ControlFlow: extractTasks(pkg.Executables),
+		DataFlows:   extractDataFlows(pkg.Executables),
+		Tables:      extractTableRefs(pkg.Executables),
+	}
+	if breakdown.Package == "" {
+		breakdown.Package = strings.TrimSuffix(filepath.Base(fileName), filepath.Ext(fileName))
+	}
+	return breakdown
+}
+
+func extractDataFlows(executables []DTSExecutable) []DataFlowDetail {
+	var dataFlows []DataFlowDetail
+	for _, task := range executables {
+		if task.ObjectData != nil && task.ObjectData.Pipeline != nil {
+			dataFlows = append(dataFlows, extractDataFlow(task.ObjectName, task.ObjectData.Pipeline))
+		}
+		if len(task.Children) > 0 {
+			dataFlows = append(dataFlows, extractDataFlows(task.Children)...)
+		}
+	}
+	return dataFlows
+}
+
+func extractTableRefs(executables []DTSExecutable) []TableRef {
+	tableMap := map[string]string{}
+	for _, task := range executables {
+		collectTableRefs(task, tableMap)
+	}
+	refs := make([]TableRef, 0, len(tableMap))
+	for table, usage := range tableMap {
+		refs = append(refs, TableRef{Table: table, Usage: usage})
+	}
+	sort.Slice(refs, func(i, j int) bool {
+		return refs[i].Table < refs[j].Table
+	})
+	return refs
+}
+
+func parseISPACConnectionManager(fileName string, data []byte) (ISPACConnectionManagerInfo, error) {
+	var raw DTSConnectionManagerFile
+	if err := xml.Unmarshal(data, &raw); err != nil {
+		return ISPACConnectionManagerInfo{}, err
+	}
+	info := ISPACConnectionManagerInfo{
+		Name:                raw.ObjectName,
+		FileName:            fileName,
+		CreationName:        raw.CreationName,
+		PropertyExpressions: map[string]string{},
+	}
+	if info.Name == "" {
+		info.Name = strings.TrimSuffix(filepath.Base(fileName), filepath.Ext(fileName))
+	}
+	if raw.ObjectData != nil && raw.ObjectData.ConnectionManager.ConnectionString != "" {
+		info.ConnectionString = maskedValue
+	}
+	for _, expression := range raw.PropertyExpressions {
+		if expression.Name != "" {
+			info.PropertyExpressions[expression.Name] = maskSensitiveMetadata(expression.Name, expression.Value)
+		}
+	}
+	if len(info.PropertyExpressions) == 0 {
+		info.PropertyExpressions = nil
+	}
+	return info, nil
+}
+
+func parseISPACParameters(data []byte) ([]ISPACParameterInfo, error) {
+	var raw SSISParameters
+	if err := xml.Unmarshal(data, &raw); err != nil {
+		return nil, err
+	}
+	params := make([]ISPACParameterInfo, 0, len(raw.Parameters))
+	for _, param := range raw.Parameters {
+		props := ssisPropertyMap(param.Properties)
+		value := strings.TrimSpace(props["Value"])
+		info := ISPACParameterInfo{
+			Name:      param.Name,
+			DataType:  strings.TrimSpace(props["DataType"]),
+			Required:  strings.TrimSpace(props["Required"]),
+			Sensitive: strings.TrimSpace(props["Sensitive"]),
+		}
+		if value != "" {
+			info.Value = maskedValue
+		}
+		params = append(params, info)
+	}
+	return params, nil
+}
+
+func applyISPACManifest(result *ISPACBreakdownResult, data []byte) error {
+	var manifest SSISProjectManifest
+	if err := xml.Unmarshal(data, &manifest); err != nil {
+		return err
+	}
+	props := ssisPropertyMap(manifest.Properties)
+	result.ProjectName = strings.TrimSpace(props["Name"])
+	result.ProtectionLevel = manifest.ProtectionLevel
+	result.TargetServerVersion = strings.TrimSpace(props["TargetServerVersion"])
+	return nil
+}
+
+func ssisPropertyMap(properties []SSISProperty) map[string]string {
+	props := map[string]string{}
+	for _, prop := range properties {
+		if prop.Name != "" {
+			props[prop.Name] = prop.Value
+		}
+	}
+	return props
+}
+
+func maskSensitiveMetadata(name, value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return ""
+	}
+	if isSensitiveMetadata(name) || isSensitiveMetadata(value) {
+		return maskedValue
+	}
+	return value
+}
+
+func isSensitiveMetadata(text string) bool {
+	lower := strings.ToLower(text)
+	sensitiveTerms := []string{
+		"connectionstring",
+		"connection string",
+		"password",
+		"pwd=",
+		"user id=",
+		"uid=",
+		"data source=",
+		"server=",
+		"secret",
+		"token",
+		"credential",
+	}
+	for _, term := range sensitiveTerms {
+		if strings.Contains(lower, term) {
+			return true
+		}
+	}
+	return false
 }
 
 // resolvePackagePath safely resolves a package name to a file path within SSISProjectPath.
@@ -463,6 +796,22 @@ func handleSSISListPackages() server.ToolHandlerFunc {
 		}
 		output, _ := serializeAny(out)
 		return mcp.NewToolResultText(output), nil
+	}
+}
+
+func handleSSISBreakdownISPAC() server.ToolHandlerFunc {
+	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		args := req.GetArguments()
+		ispacPath, _ := args["ispac_path"].(string)
+		if ispacPath == "" {
+			return mcp.NewToolResultError("ispac_path is required"), nil
+		}
+		result, err := buildISPACBreakdown(ispacPath)
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		jsonBytes, _ := json.MarshalIndent(result, "", "  ")
+		return mcp.NewToolResultText(string(jsonBytes)), nil
 	}
 }
 
@@ -868,13 +1217,13 @@ func handleSSISSchemaValidate(cm *ConnectionManager) server.ToolHandlerFunc {
 		}
 
 		out := map[string]interface{}{
-			"package":       pkg.ObjectName,
-			"status":        status,
-			"tables_found":  len(validTables),
-			"tables_total":  len(tableSet),
-			"errors":        errorCount,
-			"warnings":      warnCount,
-			"issues":        deduped,
+			"package":      pkg.ObjectName,
+			"status":       status,
+			"tables_found": len(validTables),
+			"tables_total": len(tableSet),
+			"errors":       errorCount,
+			"warnings":     warnCount,
+			"issues":       deduped,
 		}
 		output, _ := serializeAny(out)
 		return mcp.NewToolResultText(output), nil
@@ -946,6 +1295,14 @@ func registerSSISTools(s *server.MCPServer, cm *ConnectionManager) {
 			mcp.WithDescription("List all SSIS .dtsx packages in the configured project_ssis_path."),
 		),
 		handleSSISListPackages(),
+	)
+	s.AddTool(
+		mcp.NewTool("ssis_breakdown_ispac",
+			mcp.WithDescription("Break down a local SSIS .ispac deployment archive into packages, control flow, data flow, table references, connection managers, and project parameters. Sensitive values are masked."),
+			mcp.WithString("ispac_path", mcp.Required(),
+				mcp.Description("Local path to the .ispac file, e.g. 'sample-data/SAM_FIRESTORE_ETL.ispac'")),
+		),
+		handleSSISBreakdownISPAC(),
 	)
 	s.AddTool(
 		mcp.NewTool("ssis_control_flow",
